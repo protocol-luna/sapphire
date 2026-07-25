@@ -40,6 +40,7 @@ KRYSTAL_GENERIC_URL = os.environ.get(
 KRYSTAL_SEMANTIC_URL = os.environ.get(
     "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3125"
 )
+CONFIDENCE_THRESHOLD = float(os.environ.get("SAPPHIRE_CONFIDENCE_THRESHOLD", "0.0"))
 EXAMPLES_PATH = os.environ.get(
     "SAPPHIRE_EXAMPLES",
     str(Path(__file__).parent / "examples.yml"),
@@ -58,7 +59,18 @@ http_client: httpx.AsyncClient | None = None
 def load_examples(path: str) -> tuple[list[str], list[str]]:
     with open(path) as f:
         data = yaml.safe_load(f)
-    return data.get("futile", []), data.get("interessant", [])
+
+    def expand(items: list) -> list[str]:
+        out = []
+        for item in items:
+            if isinstance(item, dict):
+                for _ in range(item.get("weight", 1)):
+                    out.append(item["text"])
+            else:
+                out.append(str(item))
+        return out
+
+    return expand(data.get("futile", [])), expand(data.get("interessant", []))
 
 
 def compute_centroids(

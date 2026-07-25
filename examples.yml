@@ -50,6 +50,15 @@ futile:
   - fr
   - based
   - real
+  - period
+  - periodt
+  - word
+  - no way
+  - for real
+  - that's wild
+  - crazy
+  - wow
+  - lmfao
 
   # ennui
   - bored af
@@ -65,6 +74,13 @@ futile:
   - lets play a game
   - truth or dare
   - do a magic trick
+  - perform a trick
+  - do a dance
+  - sing a song
+  - do an impression
+  - amaze me
+  - do something funny
+  - entertain me
   - tell me a story
   - guess what
 
@@ -82,7 +98,21 @@ futile:
   - k
   - kk
   - np
-  - nvm
+  - {text: "nvm", weight: 5}
+  - nevermind
+  - forget it
+  - forget what i said
+  - forget about it
+  - dont worry about it
+  - ignore that
+  - scratch that
+  - doesn't matter
+  - skip that
+  - moving on
+  - anyway
+  - ignore my last message
+  - disregard that
+  - never mind me
   - thanks
   - thank you
   - ok thanks
@@ -147,6 +177,8 @@ interessant:
 
   # philosophie
   - what's the meaning of life
+  - why are we here
+  - what is the purpose of existence
   - do you think ai will take over
   - i think capitalism is broken tbh
   - what's your take on free will
@@ -156,11 +188,16 @@ interessant:
   - what is consciousness
   - do animals have rights
   - what is the nature of reality
+  - what does it mean to be human
+  - is there a god
 
   # partage personnel
   - my girlfriend left me
   - my dog just died
   - i just got promoted at work
+  - i'm really proud of my kid today
+  - my son graduated today
+  - i aced my exam
   - i'm scared about my exam tomorrow
   - i've been struggling with anxiety lately
   - i lost my job today
@@ -175,6 +212,8 @@ interessant:
   - i'm feeling really depressed lately
   - my cat ran away
   - i got diagnosed with something
+  - i'm getting married
+  - i became a father today
 
   # créativité
   - can you help me write a short story
@@ -189,6 +228,12 @@ interessant:
   - what should i write my novel about
   - help me name my startup
   - i need a slogan for my brand
+  - i need a name for my product
+  - help me come up with a tagline
+  - can you design a logo concept
+  - help me write a mission statement
+  - help me brainstorm brand ideas
+  - what should i name my company
 
   # politique / société
   - thoughts on the israel palestine conflict
