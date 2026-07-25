@@ -18,4 +18,5 @@ fi
 echo "[sapphire] starting on 127.0.0.1:${SAPPHIRE_PORT:-3123}..."
 echo "[sapphire] KRYSTAL_GENERIC=${KRYSTAL_GENERIC_URL:-http://127.0.0.1:3124}"
 echo "[sapphire] KRYSTAL_SEMANTIC=${KRYSTAL_SEMANTIC_URL:-http://127.0.0.1:3125}"
+echo "[sapphire] EXAMPLES=${SAPPHIRE_EXAMPLES:-$DIR/examples.yml}"
 exec python server.py

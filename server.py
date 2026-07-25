@@ -1,7 +1,8 @@
 """
 sapphire — LLM gateway / middleware.
 
-Classifies each user message as GENERIC (trivial) or SEMANTIC (serious),
+Classifies each user message as FUTILE (trivial) or INTERESSANT (serious)
+using embedding centroid similarity (fastembed + BAAI/bge-small-en-v1.5),
 then routes to the appropriate Krystal backend.
 
 Usage:
@@ -10,19 +11,19 @@ Usage:
   python server.py          # listens on 127.0.0.1:3123
 """
 
-import json
 import logging
 import os
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
-import httpx
+import yaml
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import StreamingResponse
+from fastembed import TextEmbedding
 from pydantic import BaseModel, Field
-from tokenizers import Tokenizer
+import httpx
 import uvicorn
 
 logging.basicConfig(
@@ -32,7 +33,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("sapphire")
 
-MODEL_DIR = os.path.join(os.path.dirname(__file__), "model")
 PORT = int(os.environ.get("SAPPHIRE_PORT", "3123"))
 KRYSTAL_GENERIC_URL = os.environ.get(
     "KRYSTAL_GENERIC_URL", "http://127.0.0.1:3124"
@@ -40,31 +40,49 @@ KRYSTAL_GENERIC_URL = os.environ.get(
 KRYSTAL_SEMANTIC_URL = os.environ.get(
     "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3125"
 )
+EXAMPLES_PATH = os.environ.get(
+    "SAPPHIRE_EXAMPLES",
+    str(Path(__file__).parent / "examples.yml"),
+)
 
-tokenizer: Tokenizer | None = None
-session: ort.InferenceSession | None = None
+embedder: TextEmbedding | None = None
+futile_centroid: np.ndarray | None = None
+interessant_centroid: np.ndarray | None = None
 http_client: httpx.AsyncClient | None = None
 
 
 # ---------------------------------------------------------------------------
-# Classifier
+# Classification (embedding centroid similarity)
 # ---------------------------------------------------------------------------
 
-def classify(text: str) -> tuple[str, float]:
-    if session is None or tokenizer is None:
-        return "GENERIC", 1.0
-    encoding = tokenizer.encode(text[:1024])
-    input_ids = np.array([encoding.ids], dtype=np.int64)
-    attention_mask = np.array([encoding.attention_mask], dtype=np.int64)
-    logits = session.run(
-        None,
-        {"input_ids": input_ids, "attention_mask": attention_mask},
-    )[0]
-    scores = 1.0 / (1.0 + np.exp(-logits))
-    probs = scores[0] / scores[0].sum()
-    if probs[1] > probs[0]:
-        return "SEMANTIC", round(float(probs[1]), 4)
-    return "GENERIC", round(float(probs[0]), 4)
+def load_examples(path: str) -> tuple[list[str], list[str]]:
+    with open(path) as f:
+        data = yaml.safe_load(f)
+    return data.get("futile", []), data.get("interessant", [])
+
+
+def compute_centroids(
+    embedder: TextEmbedding,
+    futile: list[str],
+    interessant: list[str],
+) -> tuple[np.ndarray, np.ndarray]:
+    f_emb = np.array(list(embedder.passage_embed(futile)))
+    i_emb = np.array(list(embedder.passage_embed(interessant)))
+    return f_emb.mean(axis=0), i_emb.mean(axis=0)
+
+
+def classify(text: str) -> tuple[str, float, float, float]:
+    if embedder is None or futile_centroid is None or interessant_centroid is None:
+        return "FUTILE", 0.0, 0.0, 0.0
+    emb = next(embedder.query_embed(text))
+    norm = np.linalg.norm(emb)
+    if norm == 0:
+        return "FUTILE", 0.0, 0.0, 0.0
+    sim_f = float(np.dot(emb, futile_centroid) / (norm * np.linalg.norm(futile_centroid)))
+    sim_i = float(np.dot(emb, interessant_centroid) / (norm * np.linalg.norm(interessant_centroid)))
+    diff = sim_i - sim_f
+    label = "INTERESSANT" if diff > 0 else "FUTILE"
+    return label, abs(diff), sim_f, sim_i
 
 
 # ---------------------------------------------------------------------------
@@ -73,27 +91,37 @@ def classify(text: str) -> tuple[str, float]:
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    global tokenizer, session, http_client
-    log.info("loading tokenizer...")
-    tokenizer = Tokenizer.from_file(os.path.join(MODEL_DIR, "tokenizer.json"))
-    tokenizer.enable_padding(pad_id=0, pad_token="[PAD]", length=64)
-    tokenizer.enable_truncation(max_length=64)
-    log.info("loading ONNX model...")
-    session = ort.InferenceSession(
-        os.path.join(MODEL_DIR, "model_quantized.onnx"),
-        providers=["CPUExecutionProvider"],
+    global embedder, futile_centroid, interessant_centroid, http_client
+
+    log.info("loading embedding model BAAI/bge-small-en-v1.5...")
+    embedder = TextEmbedding(
+        model_name="BAAI/bge-small-en-v1.5",
+        max_length=128,
     )
-    http_client = httpx.AsyncClient(timeout=httpx.Timeout(120.0))
+
+    log.info("loading examples from %s", EXAMPLES_PATH)
+    futile_examples, interessant_examples = load_examples(EXAMPLES_PATH)
+    log.info("  %d futile, %d interessant examples", len(futile_examples), len(interessant_examples))
+
+    log.info("computing centroids...")
+    futile_centroid, interessant_centroid = compute_centroids(
+        embedder, futile_examples, interessant_examples,
+    )
+
+    http_client = httpx.AsyncClient(
+        timeout=httpx.Timeout(120.0, connect=5.0),
+    )
+
     log.info(
-        "ready — GENERIC -> %s | SEMANTIC -> %s",
+        "ready — FUTILE -> %s | INTERESSANT -> %s",
         KRYSTAL_GENERIC_URL,
         KRYSTAL_SEMANTIC_URL,
     )
     yield
+
     if http_client:
         await http_client.aclose()
-    tokenizer = None
-    session = None
+    embedder = None
 
 
 app = FastAPI(title="sapphire", lifespan=lifespan)
@@ -111,28 +139,22 @@ class ChatCompletionRequest(BaseModel):
 
 @app.post("/v1/chat/completions")
 async def chat_completions(body: ChatCompletionRequest, request: Request):
-    if session is None:
+    if embedder is None:
         raise HTTPException(503, "model not loaded")
 
-    # Extract last user message for classification
     user_msgs = [m for m in body.messages if m.get("role") == "user"]
     if not user_msgs:
         raise HTTPException(400, "no user message found")
 
     last_user_text = user_msgs[-1].get("content", "")
-    label, score = classify(last_user_text)
+    label, conf, sim_f, sim_i = classify(last_user_text)
 
-    # Pick backend URL
-    backend = KRYSTAL_GENERIC_URL if label == "GENERIC" else KRYSTAL_SEMANTIC_URL
+    backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
     log.info(
-        "%s (%.1f%%) | %s | user: %s",
-        label,
-        score * 100,
-        backend,
-        last_user_text[:60],
+        "%s (Δ=%.3f, f=%.3f i=%.3f) | %s | %s",
+        label, conf, sim_f, sim_i, backend, last_user_text[:80],
     )
 
-    # Build forward payload (passthrough + extra params from headers)
     payload = body.model_dump(exclude={"stream"}, exclude_none=True)
     if "id_slot" not in payload:
         payload["id_slot"] = 0
@@ -141,7 +163,6 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
 
     if body.stream:
         return await _proxy_stream(backend, payload)
-
     return await _proxy_single(backend, payload)
 
 
@@ -151,9 +172,7 @@ async def _proxy_single(backend: str, payload: dict) -> dict:
         json=payload,
     )
     if not resp.is_success:
-        raise HTTPException(
-            resp.status_code, f"krystal error: {resp.text[:200]}"
-        )
+        raise HTTPException(resp.status_code, f"krystal error: {resp.text[:200]}")
     return resp.json()
 
 
@@ -168,8 +187,6 @@ async def _proxy_stream(backend: str, payload: dict) -> StreamingResponse:
         raise HTTPException(resp.status_code, f"krystal error: {await resp.aread()}")
 
     async def event_stream():
-        request_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
-        created = int(__import__("time").time())
         async for line in resp.aiter_lines():
             if line.startswith("data: "):
                 yield line + "\n\n"
@@ -180,28 +197,36 @@ async def _proxy_stream(backend: str, payload: dict) -> StreamingResponse:
     return StreamingResponse(
         event_stream(),
         media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Sapphire-Label": label if "label" in dir() else "",
-        },
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
 
 
-@app.post("/classify")
-async def classify_endpoint(data: dict):
-    text = data.get("text", "")
-    if not text:
-        return {"label": "GENERIC", "score": 1.0}
-    label, score = classify(text[:1024])
-    return {"label": label, "score": score}
+class ClassifyQuery(BaseModel):
+    text: str = Field(..., min_length=1, max_length=2048)
+
+
+class ClassifyResult(BaseModel):
+    label: str
+    confidence: float
+    sim_futile: float
+    sim_interessant: float
+
+
+@app.post("/classify", response_model=ClassifyResult)
+async def classify_endpoint(query: ClassifyQuery):
+    label, conf, sim_f, sim_i = classify(query.text[:2048])
+    return ClassifyResult(
+        label=label, confidence=round(conf, 4),
+        sim_futile=round(sim_f, 4), sim_interessant=round(sim_i, 4),
+    )
 
 
 @app.get("/health")
 async def health():
     return {
         "status": "ok",
-        "model_loaded": session is not None,
+        "method": "embedding-centroid",
+        "model": "BAAI/bge-small-en-v1.5",
         "krystal_generic": KRYSTAL_GENERIC_URL,
         "krystal_semantic": KRYSTAL_SEMANTIC_URL,
     }

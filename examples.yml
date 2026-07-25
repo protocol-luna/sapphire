@@ -1,0 +1,214 @@
+# Exemples pour la classification par similarité d'embedding
+# Sapphire calcule le centroïde de chaque liste et classe par similarité cosinus
+
+futile:
+  # salutations
+  - hello
+  - hi
+  - hi how are you
+  - what's up
+  - sup
+  - yo
+  - good morning
+  - good evening
+  - hey there
+  - howdy
+  - wassup
+  - heyy
+  - hii
+  - salut
+  - coucou
+
+  # test du bot
+  - are you a real person
+  - are you human
+  - good bot
+  - bad bot
+  - are you sentient
+  - can you hear me
+  - is this thing on
+  - are you alive
+  - are you a bot
+  - what are you
+
+  # reactions creuses
+  - lol
+  - haha nice
+  - haha ok
+  - lmao
+  - same energy fr
+  - lol same energy fr
+  - cool cool
+  - nice
+  - ok cool
+  - bet
+  - fair enough
+  - true true
+  - rip
+  - damn
+  - oof
+  - fr
+  - based
+  - real
+
+  # ennui
+  - bored af
+  - im bored
+  - nothing to do
+  - so bored rn
+  - im so bored
+  - kinda bored
+
+  # divertissement pur
+  - tell me a joke
+  - wanna play minecraft
+  - lets play a game
+  - truth or dare
+  - do a magic trick
+  - tell me a story
+  - guess what
+
+  # phatique
+  - stop talking
+  - shut up
+  - go away
+  - leave me alone
+  - i love you
+  - you're the best
+  - thanks bot
+  - ty
+  - brb
+  - wyd
+  - k
+  - kk
+  - np
+  - nvm
+  - thanks
+  - thank you
+  - ok thanks
+  - tyvm
+  - appreciate it
+  - you too
+  - same
+  - mood
+  - big mood
+
+  # questions creuses
+  - what's your favorite color
+  - what's your name
+  - how old are you
+  - what day is it today
+  - what's the weather like
+  - do you like pizza
+  - do you like music
+  - what's your favorite movie
+  - do you have a pet
+  - what's your hobby
+  - pineapple on pizza
+  - are you a cat person or dog person
+  - what's your sign
+
+interessant:
+  # technique / dev
+  - i am a software engineer
+  - how do i deploy a cloudflare worker
+  - i need help with my code
+  - i'm building a react app and the state keeps resetting
+  - what's the difference between tcp and udp
+  - how does bitcoin mining work
+  - explain how neural networks work
+  - how do i optimize this sql query
+  - what's the best way to structure a rest api
+  - i just fixed a nasty memory leak
+  - how does garbage collection work in python
+  - i'm learning rust and the borrow checker is brutal
+  - how do i debug this docker container
+  - what's the difference between git merge and rebase
+  - how do i set up ci/cd for my project
+  - what's the best orm for node.js
+  - how do i handle authentication in a spa
+  - explain dependency injection
+  - what's the time complexity of this algorithm
+  - how does kubernetes service discovery work
+
+  # sciences
+  - what is quantum computing
+  - can you explain quantum physics
+  - how do vaccines actually work
+  - what's the difference between weather and climate
+  - why is the sky blue
+  - how do black holes form
+  - what's the theory of relativity
+  - how does photosynthesis work
+  - what causes earthquakes
+  - how does dna replication work
+  - explain the greenhouse effect
+  - how do batteries work
+
+  # philosophie
+  - what's the meaning of life
+  - do you think ai will take over
+  - i think capitalism is broken tbh
+  - what's your take on free will
+  - what's the difference between ethics and morality
+  - do you believe in fate
+  - is there life after death
+  - what is consciousness
+  - do animals have rights
+  - what is the nature of reality
+
+  # partage personnel
+  - my girlfriend left me
+  - my dog just died
+  - i just got promoted at work
+  - i'm scared about my exam tomorrow
+  - i've been struggling with anxiety lately
+  - i lost my job today
+  - my parents are getting divorced
+  - i just moved to a new city and i feel lonely
+  - i finally finished my thesis
+  - i had a huge argument with my brother
+  - i think i'm falling in love
+  - i'm going through a tough time
+  - i don't know what to do with my life
+  - i just broke up with my partner
+  - i'm feeling really depressed lately
+  - my cat ran away
+  - i got diagnosed with something
+
+  # créativité
+  - can you help me write a short story
+  - help me brainstorm a business idea
+  - can you recommend a book on stoicism
+  - what's a good strategy for learning a language
+  - how should i structure my resume
+  - how do i start investing
+  - what's the best way to prepare for an interview
+  - i want to start a youtube channel
+  - how do i learn to draw
+  - what should i write my novel about
+  - help me name my startup
+  - i need a slogan for my brand
+
+  # politique / société
+  - thoughts on the israel palestine conflict
+  - what do you think about universal basic income
+  - is democracy the best system
+  - should we legalize all drugs
+  - what's your opinion on immigration
+  - why is healthcare so expensive
+  - thoughts on the housing crisis
+  - what caused the 2008 financial crisis
+  - explain the cold war
+
+  # demandes substantielles
+  - can you help me with my homework
+  - i need advice about my relationship
+  - how do i tell my parents something difficult
+  - what career should i pursue
+  - i'm thinking about dropping out of school
+  - how do i make friends as an adult
+  - i need help planning my wedding
+  - how do i negotiate my salary
+  - i want to move abroad
+  - can you proofread my cover letter
