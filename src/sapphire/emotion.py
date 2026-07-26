@@ -84,13 +84,26 @@ class EmotionState:
     """
     Per-conversation exponential moving average of (valence, arousal),
     decaying toward 0 on every update — same idea as Jade's topic fatigue.
+
+    NOTE: this decays toward the *recent average raw signal*, not literally
+    toward 0 — if incoming messages carry a persistent weak signal (e.g.
+    casual affirmations reading as mildly positive), the state will settle
+    near that value, not at 0. `deadzone` exists to zero out signal too weak
+    to be meaningful, so genuinely flat conversation does pull the state
+    back toward 0.
     """
 
-    def __init__(self, decay: float = 0.85):
+    def __init__(self, decay: float = 0.85, deadzone: float = 0.06):
         self.decay = decay
+        self.deadzone = deadzone
         self._state: dict[str, dict[str, float]] = {}
 
     def update(self, key: str, valence_delta: float, arousal_delta: float) -> dict[str, float]:
+        if abs(valence_delta) < self.deadzone:
+            valence_delta = 0.0
+        if abs(arousal_delta) < self.deadzone:
+            arousal_delta = 0.0
+
         s = self._state.setdefault(key, {"valence": 0.0, "arousal": 0.0})
         s["valence"] = s["valence"] * self.decay + valence_delta * (1 - self.decay)
         s["arousal"] = s["arousal"] * self.decay + arousal_delta * (1 - self.decay)

@@ -55,12 +55,13 @@ EMOTION_EXAMPLES_PATH = os.environ.get(
     get_default_emotion_examples_path(),
 )
 EMOTION_DECAY = float(os.environ.get("SAPPHIRE_EMOTION_DECAY", "0.85"))
+EMOTION_DEADZONE = float(os.environ.get("SAPPHIRE_EMOTION_DEADZONE", "0.06"))
 
 embedder: TextEmbedding | None = None
 futile_centroid: np.ndarray | None = None
 interessant_centroid: np.ndarray | None = None
 emotion_centroids: dict[str, np.ndarray] | None = None
-emotion_state = EmotionState(decay=EMOTION_DECAY)
+emotion_state = EmotionState(decay=EMOTION_DECAY, deadzone=EMOTION_DEADZONE)
 http_client: httpx.AsyncClient | None = None
 
 
