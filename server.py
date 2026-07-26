@@ -13,18 +13,17 @@ Usage:
 
 import logging
 import os
-import uuid
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 import numpy as np
-import yaml
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse
 from fastembed import TextEmbedding
 from pydantic import BaseModel, Field
 import httpx
 import uvicorn
+
+from classifier import load_examples, compute_centroids, classify, get_default_examples_path
+from proxy import proxy_single, proxy_stream
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,10 +39,9 @@ KRYSTAL_GENERIC_URL = os.environ.get(
 KRYSTAL_SEMANTIC_URL = os.environ.get(
     "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3125"
 )
-CONFIDENCE_THRESHOLD = float(os.environ.get("SAPPHIRE_CONFIDENCE_THRESHOLD", "0.0"))
 EXAMPLES_PATH = os.environ.get(
     "SAPPHIRE_EXAMPLES",
-    str(Path(__file__).parent / "examples.yml"),
+    get_default_examples_path(),
 )
 
 embedder: TextEmbedding | None = None
@@ -51,55 +49,6 @@ futile_centroid: np.ndarray | None = None
 interessant_centroid: np.ndarray | None = None
 http_client: httpx.AsyncClient | None = None
 
-
-# ---------------------------------------------------------------------------
-# Classification (embedding centroid similarity)
-# ---------------------------------------------------------------------------
-
-def load_examples(path: str) -> tuple[list[str], list[str]]:
-    with open(path) as f:
-        data = yaml.safe_load(f)
-
-    def expand(items: list) -> list[str]:
-        out = []
-        for item in items:
-            if isinstance(item, dict):
-                for _ in range(item.get("weight", 1)):
-                    out.append(item["text"])
-            else:
-                out.append(str(item))
-        return out
-
-    return expand(data.get("futile", [])), expand(data.get("interessant", []))
-
-
-def compute_centroids(
-    embedder: TextEmbedding,
-    futile: list[str],
-    interessant: list[str],
-) -> tuple[np.ndarray, np.ndarray]:
-    f_emb = np.array(list(embedder.passage_embed(futile)))
-    i_emb = np.array(list(embedder.passage_embed(interessant)))
-    return f_emb.mean(axis=0), i_emb.mean(axis=0)
-
-
-def classify(text: str) -> tuple[str, float, float, float]:
-    if embedder is None or futile_centroid is None or interessant_centroid is None:
-        return "FUTILE", 0.0, 0.0, 0.0
-    emb = next(embedder.query_embed(text))
-    norm = np.linalg.norm(emb)
-    if norm == 0:
-        return "FUTILE", 0.0, 0.0, 0.0
-    sim_f = float(np.dot(emb, futile_centroid) / (norm * np.linalg.norm(futile_centroid)))
-    sim_i = float(np.dot(emb, interessant_centroid) / (norm * np.linalg.norm(interessant_centroid)))
-    diff = sim_i - sim_f
-    label = "INTERESSANT" if diff > 0 else "FUTILE"
-    return label, abs(diff), sim_f, sim_i
-
-
-# ---------------------------------------------------------------------------
-# FastAPI
-# ---------------------------------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
@@ -159,7 +108,9 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
         raise HTTPException(400, "no user message found")
 
     last_user_text = user_msgs[-1].get("content", "")
-    label, conf, sim_f, sim_i = classify(last_user_text)
+    label, conf, sim_f, sim_i = classify(
+        last_user_text, embedder, futile_centroid, interessant_centroid,
+    )
 
     backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
     log.info(
@@ -174,43 +125,8 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
         payload["cache_prompt"] = True
 
     if body.stream:
-        return await _proxy_stream(backend, payload)
-    return await _proxy_single(backend, payload)
-
-
-async def _proxy_single(backend: str, payload: dict) -> dict:
-    resp = await http_client.post(
-        f"{backend}/v1/chat/completions",
-        json=payload,
-    )
-    if not resp.is_success:
-        raise HTTPException(resp.status_code, f"krystal error: {resp.text[:200]}")
-    return resp.json()
-
-
-async def _proxy_stream(backend: str, payload: dict) -> StreamingResponse:
-    req = http_client.build_request(
-        "POST",
-        f"{backend}/v1/chat/completions",
-        json={**payload, "stream": True},
-    )
-    resp = await http_client.send(req, stream=True)
-    if not resp.is_success:
-        raise HTTPException(resp.status_code, f"krystal error: {await resp.aread()}")
-
-    async def event_stream():
-        async for line in resp.aiter_lines():
-            if line.startswith("data: "):
-                yield line + "\n\n"
-            elif line.strip():
-                yield f"data: {line}\n\n"
-        yield "data: [DONE]\n\n"
-
-    return StreamingResponse(
-        event_stream(),
-        media_type="text/event-stream",
-        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
-    )
+        return await proxy_stream(http_client, backend, payload)
+    return await proxy_single(http_client, backend, payload)
 
 
 class ClassifyQuery(BaseModel):
@@ -226,7 +142,9 @@ class ClassifyResult(BaseModel):
 
 @app.post("/classify", response_model=ClassifyResult)
 async def classify_endpoint(query: ClassifyQuery):
-    label, conf, sim_f, sim_i = classify(query.text[:2048])
+    label, conf, sim_f, sim_i = classify(
+        query.text[:2048], embedder, futile_centroid, interessant_centroid,
+    )
     return ClassifyResult(
         label=label, confidence=round(conf, 4),
         sim_futile=round(sim_f, 4), sim_interessant=round(sim_i, 4),

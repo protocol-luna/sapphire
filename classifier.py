@@ -1,0 +1,65 @@
+"""
+Sapphire classifier — embedding centroid similarity.
+
+Computes cosine similarity between a query and two pre-computed centroids
+(futile / interessant) derived from curated examples.
+"""
+
+from pathlib import Path
+
+import numpy as np
+import yaml
+from fastembed import TextEmbedding
+
+
+def load_examples(path: str) -> tuple[list[str], list[str]]:
+    """Load futile and interessant examples from a YAML file."""
+    with open(path) as f:
+        data = yaml.safe_load(f)
+
+    def expand(items: list) -> list[str]:
+        out = []
+        for item in items:
+            if isinstance(item, dict):
+                for _ in range(item.get("weight", 1)):
+                    out.append(item["text"])
+            else:
+                out.append(str(item))
+        return out
+
+    return expand(data.get("futile", [])), expand(data.get("interessant", []))
+
+
+def compute_centroids(
+    embedder: TextEmbedding,
+    futile: list[str],
+    interessant: list[str],
+) -> tuple[np.ndarray, np.ndarray]:
+    """Compute centroid vectors by averaging all example embeddings."""
+    f_emb = np.array(list(embedder.passage_embed(futile)))
+    i_emb = np.array(list(embedder.passage_embed(interessant)))
+    return f_emb.mean(axis=0), i_emb.mean(axis=0)
+
+
+def classify(
+    text: str,
+    embedder: TextEmbedding | None,
+    futile_centroid: np.ndarray | None,
+    interessant_centroid: np.ndarray | None,
+) -> tuple[str, float, float, float]:
+    """Classify text as FUTILE or INTERESSANT via cosine similarity."""
+    if embedder is None or futile_centroid is None or interessant_centroid is None:
+        return "FUTILE", 0.0, 0.0, 0.0
+    emb = next(embedder.query_embed(text))
+    norm = np.linalg.norm(emb)
+    if norm == 0:
+        return "FUTILE", 0.0, 0.0, 0.0
+    sim_f = float(np.dot(emb, futile_centroid) / (norm * np.linalg.norm(futile_centroid)))
+    sim_i = float(np.dot(emb, interessant_centroid) / (norm * np.linalg.norm(interessant_centroid)))
+    diff = sim_i - sim_f
+    label = "INTERESSANT" if diff > 0 else "FUTILE"
+    return label, abs(diff), sim_f, sim_i
+
+
+def get_default_examples_path() -> str:
+    return str(Path(__file__).parent / "examples.yml")
