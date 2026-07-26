@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-sapphire — LLM gateway / middleware.
+sapphire -- LLM gateway / middleware.
 
 Classifies each user message as FUTILE (trivial) or INTERESSANT (serious)
 using embedding centroid similarity (fastembed + BAAI/bge-small-en-v1.5),
@@ -14,6 +15,7 @@ Usage:
 import json
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -213,6 +215,7 @@ class RespondRequest(BaseModel):
     text: str = Field(..., min_length=1)
     session_id: str = "default"
     stream: bool = False
+    debug: bool = False
 
 
 class RespondResult(BaseModel):
@@ -221,6 +224,13 @@ class RespondResult(BaseModel):
     backend: str
     valence: float
     arousal: float
+    debug_prompt_tokens: int | None = None
+    debug_completion_tokens: int | None = None
+    debug_time_ms: float | None = None
+    debug_tokens_per_second: float | None = None
+    debug_emotion_state_valence: float | None = None
+    debug_emotion_state_arousal: float | None = None
+    debug_classification_confidence: float | None = None
 
 
 def _sampling_params() -> dict:
@@ -268,19 +278,41 @@ async def respond(body: RespondRequest, request: Request):
     slot = session_store.slot_for(body.session_id)
 
     if not body.stream:
-        text = await call_backend_with_retry(
+        t0 = time.monotonic()
+        text, usage = await call_backend_with_retry(
             http_client, backend, final_messages, slot,
             _sampling_params(), LLM_MAX_RETRIES, log=log,
         )
+        elapsed = time.monotonic() - t0
+
         session_store.append_assistant_message(body.session_id, text)
         removed = session_store.cleanup_stale()
         if removed:
             log.info("cleaned up %d stale session(s)", removed)
 
+        emo_state = emotion_state.get(body.session_id)
+
         log.info(
             "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
             label, conf, valence, arousal, backend, body.text[:80],
         )
+
+        if body.debug:
+            pt = usage.get("prompt_tokens")
+            ct = usage.get("completion_tokens")
+            tps = round(ct / elapsed, 1) if ct and elapsed > 0 else None
+            return RespondResult(
+                text=text, label=label, backend=backend,
+                valence=valence, arousal=arousal,
+                debug_prompt_tokens=pt,
+                debug_completion_tokens=ct,
+                debug_time_ms=round(elapsed * 1000),
+                debug_tokens_per_second=tps,
+                debug_emotion_state_valence=round(emo_state.get("valence", 0), 4),
+                debug_emotion_state_arousal=round(emo_state.get("arousal", 0), 4),
+                debug_classification_confidence=round(conf, 4),
+            )
+
         return RespondResult(
             text=text, label=label, backend=backend, valence=valence, arousal=arousal,
         )

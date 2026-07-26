@@ -61,7 +61,7 @@ async def call_backend_once(
     slot: int,
     sampling_params: dict,
     max_tokens: int = 2000,
-) -> str:
+) -> tuple[str, dict]:
     body = {
         "messages": messages,
         "id_slot": slot,
@@ -73,7 +73,9 @@ async def call_backend_once(
     if not resp.is_success:
         raise HTTPException(resp.status_code, f"krystal error: {resp.text[:200]}")
     data = resp.json()
-    return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+    usage = data.get("usage", {})
+    return text, usage
 
 
 async def call_backend_with_retry(
@@ -85,18 +87,19 @@ async def call_backend_with_retry(
     max_retries: int,
     max_tokens: int = 2000,
     log=None,
-) -> str:
+) -> tuple[str, dict]:
     last_response = ""
+    last_usage: dict = {}
     for attempt in range(max_retries + 1):
-        last_response = await call_backend_once(
+        last_response, last_usage = await call_backend_once(
             client, backend, messages, slot, sampling_params, max_tokens,
         )
         from sapphire.degenerate import is_degenerate_output
         if not is_degenerate_output(last_response):
-            return last_response
+            return last_response, last_usage
         if log:
             log.warning(
                 "degenerate output detected (attempt %d/%d): %r",
                 attempt + 1, max_retries + 1, last_response,
             )
-    return last_response
+    return last_response, last_usage
