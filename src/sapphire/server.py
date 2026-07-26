@@ -233,21 +233,24 @@ class RespondResult(BaseModel):
     debug_classification_confidence: float | None = None
 
 
-def _sampling_params() -> dict:
+def _sampling_params(valence: float = 0, arousal: float = 0) -> dict:
+    temp = max(0.4, min(1.0, 0.7 + arousal * 0.3))
+    penalty = max(1.0, min(1.3, 1.15 - valence * 0.1))
     if MIROSTAT_ENABLED:
+        ent = max(3.0, min(8.0, MIROSTAT_ENT + arousal * 2.0))
         return {
             "mirostat": MIROSTAT_MODE,
             "mirostat_lr": MIROSTAT_LR,
-            "mirostat_ent": MIROSTAT_ENT,
-            "repeat_penalty": 1.15,
+            "mirostat_ent": ent,
+            "repeat_penalty": round(penalty, 2),
             "repeat_last_n": 64,
         }
     return {
-        "temperature": 0.8,
+        "temperature": round(temp, 2),
         "top_k": 60,
         "top_p": 0.9,
         "min_p": 0.05,
-        "repeat_penalty": 1.15,
+        "repeat_penalty": round(penalty, 2),
         "repeat_last_n": 64,
     }
 
@@ -276,12 +279,13 @@ async def respond(body: RespondRequest, request: Request):
         final_messages = inject_few_shot_into_conversation(session.messages, fs_messages)
 
     slot = session_store.slot_for(body.session_id)
+    params = _sampling_params(valence, arousal)
 
     if not body.stream:
         t0 = time.monotonic()
         text, usage = await call_backend_with_retry(
             http_client, backend, final_messages, slot,
-            _sampling_params(), LLM_MAX_RETRIES, log=log,
+            params, LLM_MAX_RETRIES, log=log,
         )
         elapsed = time.monotonic() - t0
 
@@ -324,7 +328,7 @@ async def respond(body: RespondRequest, request: Request):
         "cache_prompt": True,
         "max_tokens": 2000,
         "stream": True,
-        **_sampling_params(),
+        **params,
     }
 
     req = http_client.build_request(
