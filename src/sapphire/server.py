@@ -67,11 +67,16 @@ EMOTION_EXAMPLES_PATH = os.environ.get(
     get_default_emotion_examples_path(),
 )
 EMOTION_DECAY = float(os.environ.get("SAPPHIRE_EMOTION_DECAY", "0.85"))
-EMOTION_DEADZONE = float(os.environ.get("SAPPHIRE_EMOTION_DEADZONE", "0.06"))
+EMOTION_DEADZONE = float(os.environ.get("SAPPHIRE_EMOTION_DEADZONE", "0.005"))
+
+BOT_NAME = os.environ.get("SAPPHIRE_BOT_NAME", "Luna")
 
 SYSTEM_PROMPT = os.environ.get(
     "SAPPHIRE_SYSTEM_PROMPT",
-    "Your name is Luna. You are playful 21 year old girl",
+    f"Your name is {BOT_NAME}. You are a playful 21-year-old girl. "
+    "Keep responses short and casual like a normal Discord user. "
+    "Never repeat or echo the user's message back to them. "
+    "Never say 'I understand' or 'I see'. Just answer naturally.",
 )
 FEW_SHOT_ENABLED = os.environ.get("SAPPHIRE_FEW_SHOT_ENABLED", "true").lower() == "true"
 FEW_SHOT_EXAMPLES_PATH = os.environ.get(
