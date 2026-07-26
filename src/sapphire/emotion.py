@@ -53,6 +53,34 @@ def compute_emotion_centroids(
     return centroids
 
 
+CENTROID_DIR = Path(__file__).resolve().parent.parent.parent / "centroids"
+
+
+def save_emotion_centroids(
+    centroids: dict[str, np.ndarray],
+    path: str | Path = "",
+) -> None:
+    """Save emotion centroids to a .npz file."""
+    dest = Path(path) if path else CENTROID_DIR / "emotion_centroids.npz"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(dest, **centroids)
+
+
+def load_emotion_centroids(
+    path: str | Path = "",
+) -> dict[str, np.ndarray] | None:
+    """Load emotion centroids from a .npz file. Returns None if missing."""
+    src = Path(path) if path else CENTROID_DIR / "emotion_centroids.npz"
+    if not src.exists():
+        return None
+    data = np.load(src)
+    return dict(data)
+
+
+def emotion_centroid_path() -> str:
+    return str(CENTROID_DIR / "emotion_centroids.npz")
+
+
 def _axis_score(emb: np.ndarray, pos: np.ndarray, neg: np.ndarray) -> float:
     """Signed cosine-similarity difference between the two poles of an axis."""
     norm = np.linalg.norm(emb)

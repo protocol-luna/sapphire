@@ -27,13 +27,24 @@ from pydantic import BaseModel, Field
 import httpx
 import uvicorn
 
-from sapphire.classifier import load_examples, compute_centroids, classify, get_default_examples_path
+from sapphire.classifier import (
+    load_examples,
+    compute_centroids,
+    classify,
+    get_default_examples_path,
+    save_centroids,
+    load_centroids,
+    centroid_path,
+)
 from sapphire.emotion import (
     load_emotion_examples,
     compute_emotion_centroids,
     score_axes,
     get_default_emotion_examples_path,
     EmotionState,
+    save_emotion_centroids,
+    load_emotion_centroids,
+    emotion_centroid_path,
 )
 from sapphire.few_shot import (
     load_few_shot_examples,
@@ -115,20 +126,32 @@ async def lifespan(_app: FastAPI):
         max_length=128,
     )
 
-    log.info("loading examples from %s", EXAMPLES_PATH)
-    futile_examples, interessant_examples = load_examples(EXAMPLES_PATH)
-    log.info("  %d futile, %d interessant examples", len(futile_examples), len(interessant_examples))
+    # Try loading prebuilt centroids first
+    futile_centroid, interessant_centroid = load_centroids()
+    emotion_centroids = load_emotion_centroids()
 
-    log.info("computing centroids...")
-    futile_centroid, interessant_centroid = compute_centroids(
-        embedder, futile_examples, interessant_examples,
-    )
+    if futile_centroid is not None and interessant_centroid is not None and emotion_centroids is not None:
+        log.info("loaded prebuilt centroids from %s/", centroid_path().rsplit("/", 1)[0])
+    else:
+        log.info("prebuilt centroids not found, computing from examples...")
+        log.info("loading examples from %s", EXAMPLES_PATH)
+        futile_examples, interessant_examples = load_examples(EXAMPLES_PATH)
+        log.info("  %d futile, %d interessant examples", len(futile_examples), len(interessant_examples))
 
-    log.info("loading emotion examples from %s", EMOTION_EXAMPLES_PATH)
-    emotion_examples = load_emotion_examples(EMOTION_EXAMPLES_PATH)
-    for pole, texts in emotion_examples.items():
-        log.info("  %s: %d examples", pole, len(texts))
-    emotion_centroids = compute_emotion_centroids(embedder, emotion_examples)
+        log.info("computing classification centroids...")
+        futile_centroid, interessant_centroid = compute_centroids(
+            embedder, futile_examples, interessant_examples,
+        )
+        save_centroids(futile_centroid, interessant_centroid)
+        log.info("  saved to %s", centroid_path())
+
+        log.info("loading emotion examples from %s", EMOTION_EXAMPLES_PATH)
+        emotion_examples = load_emotion_examples(EMOTION_EXAMPLES_PATH)
+        for pole, texts in emotion_examples.items():
+            log.info("  %s: %d examples", pole, len(texts))
+        emotion_centroids = compute_emotion_centroids(embedder, emotion_examples)
+        save_emotion_centroids(emotion_centroids)
+        log.info("  saved emotion centroids to %s", emotion_centroid_path())
 
     log.info("loading few-shot examples from %s", FEW_SHOT_EXAMPLES_PATH)
     few_shot_examples = load_few_shot_examples(FEW_SHOT_EXAMPLES_PATH)

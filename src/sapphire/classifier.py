@@ -41,6 +41,35 @@ def compute_centroids(
     return f_emb.mean(axis=0), i_emb.mean(axis=0)
 
 
+CENTROID_DIR = Path(__file__).resolve().parent.parent.parent / "centroids"
+
+
+def save_centroids(
+    futile_centroid: np.ndarray,
+    interessant_centroid: np.ndarray,
+    path: str | Path = "",
+) -> None:
+    """Save classification centroids to a .npz file."""
+    dest = Path(path) if path else CENTROID_DIR / "classifier_centroids.npz"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(dest, futile=futile_centroid, interessant=interessant_centroid)
+
+
+def load_centroids(
+    path: str | Path = "",
+) -> tuple[np.ndarray | None, np.ndarray | None]:
+    """Load classification centroids from a .npz file. Returns (None, None) if missing."""
+    src = Path(path) if path else CENTROID_DIR / "classifier_centroids.npz"
+    if not src.exists():
+        return None, None
+    data = np.load(src)
+    return data["futile"], data["interessant"]
+
+
+def centroid_path() -> str:
+    return str(CENTROID_DIR / "classifier_centroids.npz")
+
+
 def classify(
     text: str,
     embedder: TextEmbedding | None,
