@@ -11,6 +11,7 @@ Usage:
   python server.py          # listens on 127.0.0.1:3123
 """
 
+import json
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -18,6 +19,7 @@ from pathlib import Path
 
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import StreamingResponse
 from fastembed import TextEmbedding
 from pydantic import BaseModel, Field
 import httpx
@@ -210,6 +212,7 @@ class RespondRequest(BaseModel):
     username: str = ""
     text: str = Field(..., min_length=1)
     session_id: str = "default"
+    stream: bool = False
 
 
 class RespondResult(BaseModel):
@@ -239,8 +242,8 @@ def _sampling_params() -> dict:
     }
 
 
-@app.post("/v1/respond", response_model=RespondResult)
-async def respond(body: RespondRequest):
+@app.post("/v1/respond")
+async def respond(body: RespondRequest, request: Request):
     if embedder is None or session_store is None:
         raise HTTPException(503, "sapphire not ready")
 
@@ -263,23 +266,79 @@ async def respond(body: RespondRequest):
         final_messages = inject_few_shot_into_conversation(session.messages, fs_messages)
 
     slot = session_store.slot_for(body.session_id)
-    text = await call_backend_with_retry(
-        http_client, backend, final_messages, slot,
-        _sampling_params(), LLM_MAX_RETRIES, log=log,
+
+    if not body.stream:
+        text = await call_backend_with_retry(
+            http_client, backend, final_messages, slot,
+            _sampling_params(), LLM_MAX_RETRIES, log=log,
+        )
+        session_store.append_assistant_message(body.session_id, text)
+        removed = session_store.cleanup_stale()
+        if removed:
+            log.info("cleaned up %d stale session(s)", removed)
+
+        log.info(
+            "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
+            label, conf, valence, arousal, backend, body.text[:80],
+        )
+        return RespondResult(
+            text=text, label=label, backend=backend, valence=valence, arousal=arousal,
+        )
+
+    # --- Streaming mode ---
+    body_payload = {
+        "messages": final_messages,
+        "id_slot": slot,
+        "cache_prompt": True,
+        "max_tokens": 2000,
+        "stream": True,
+        **_sampling_params(),
+    }
+
+    req = http_client.build_request(
+        "POST",
+        f"{backend}/v1/chat/completions",
+        json=body_payload,
     )
+    resp = await http_client.send(req, stream=True)
+    if not resp.is_success:
+        raise HTTPException(resp.status_code, f"krystal error: {await resp.aread()}")
 
-    session_store.append_assistant_message(body.session_id, text)
-    removed = session_store.cleanup_stale()
-    if removed:
-        log.info("cleaned up %d stale session(s)", removed)
+    full_text: list[str] = []
 
-    log.info(
-        "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
-        label, conf, valence, arousal, backend, body.text[:80],
-    )
+    async def event_stream():
+        async for line in resp.aiter_lines():
+            if line.startswith("data: "):
+                payload = line[6:]
+                if payload == "[DONE]":
+                    break
+                try:
+                    data = json.loads(payload)
+                    delta = data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    if delta:
+                        full_text.append(delta)
+                        yield f"data: {delta}\n\n"
+                except json.JSONDecodeError:
+                    yield f"data: {payload}\n\n"
 
-    return RespondResult(
-        text=text, label=label, backend=backend, valence=valence, arousal=arousal,
+        text = "".join(full_text)
+        session_store.append_assistant_message(body.session_id, text)
+        removed = session_store.cleanup_stale()
+        if removed:
+            log.info("cleaned up %d stale session(s)", removed)
+
+        log.info(
+            "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
+            label, conf, valence, arousal, backend, body.text[:80],
+        )
+
+        yield f"data: {json.dumps({'text': text, 'label': label, 'backend': backend, 'valence': valence, 'arousal': arousal})}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
 
 
