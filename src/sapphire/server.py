@@ -173,6 +173,8 @@ class ClassifyResult(BaseModel):
     confidence: float
     sim_futile: float
     sim_interessant: float
+    valence: float = 0.0
+    arousal: float = 0.0
 
 
 @app.post("/classify", response_model=ClassifyResult)
@@ -180,9 +182,12 @@ async def classify_endpoint(query: ClassifyQuery):
     label, conf, sim_f, sim_i = classify(
         query.text[:2048], embedder, futile_centroid, interessant_centroid,
     )
+    emb = next(embedder.query_embed(query.text[:2048]))
+    valence, arousal = score_axes(emb, emotion_centroids)
     return ClassifyResult(
         label=label, confidence=round(conf, 4),
         sim_futile=round(sim_f, 4), sim_interessant=round(sim_i, 4),
+        valence=round(valence, 4), arousal=round(arousal, 4),
     )
 
 

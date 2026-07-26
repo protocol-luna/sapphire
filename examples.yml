@@ -1,259 +1,1123 @@
-# Exemples pour la classification par similarité d'embedding
-# Sapphire calcule le centroïde de chaque liste et classe par similarité cosinus
-
 futile:
-  # salutations
-  - hello
-  - hi
-  - hi how are you
-  - what's up
-  - sup
-  - yo
-  - good morning
-  - good evening
-  - hey there
-  - howdy
-  - wassup
-  - heyy
-  - hii
-  - salut
-  - coucou
-
-  # test du bot
-  - are you a real person
-  - are you human
-  - good bot
-  - bad bot
-  - are you sentient
-  - can you hear me
-  - is this thing on
-  - are you alive
-  - are you a bot
-  - what are you
-
-  # reactions creuses
-  - lol
-  - haha nice
-  - haha ok
-  - lmao
-  - same energy fr
-  - lol same energy fr
-  - cool cool
-  - nice
-  - ok cool
-  - bet
-  - fair enough
-  - true true
-  - rip
-  - damn
-  - oof
-  - fr
-  - based
-  - real
-  - period
-  - periodt
-  - word
-  - no way
-  - for real
-  - that's wild
-  - crazy
-  - wow
-  - lmfao
-
-  # ennui
-  - bored af
-  - im bored
-  - nothing to do
-  - so bored rn
-  - im so bored
-  - kinda bored
-
-  # divertissement pur
-  - tell me a joke
-  - wanna play minecraft
-  - lets play a game
-  - truth or dare
-  - do a magic trick
-  - perform a trick
-  - do a dance
-  - sing a song
-  - do an impression
-  - amaze me
-  - do something funny
-  - entertain me
-  - tell me a story
-  - guess what
-
-  # phatique
-  - stop talking
-  - shut up
-  - go away
-  - leave me alone
-  - i love you
-  - you're the best
-  - thanks bot
-  - ty
-  - brb
-  - wyd
-  - k
-  - kk
-  - np
-  - {text: "nvm", weight: 5}
-  - nevermind
-  - forget it
-  - forget what i said
-  - forget about it
-  - dont worry about it
-  - ignore that
-  - scratch that
-  - doesn't matter
-  - skip that
-  - moving on
-  - anyway
-  - ignore my last message
-  - disregard that
-  - never mind me
-  - thanks
-  - thank you
-  - ok thanks
-  - tyvm
-  - appreciate it
-  - you too
-  - same
-  - mood
-  - big mood
-
-  # questions creuses
-  - what's your favorite color
-  - what's your name
-  - how old are you
-  - what day is it today
-  - what's the weather like
-  - do you like pizza
-  - do you like music
-  - what's your favorite movie
-  - do you have a pet
-  - what's your hobby
-  - pineapple on pizza
-  - are you a cat person or dog person
-  - what's your sign
-
+- hello
+- hi
+- hi how are you
+- what's up
+- sup
+- yo
+- good morning
+- good evening
+- hey there
+- howdy
+- wassup
+- heyy
+- hii
+- salut
+- coucou
+- are you a real person
+- are you human
+- good bot
+- bad bot
+- are you sentient
+- can you hear me
+- is this thing on
+- are you alive
+- are you a bot
+- what are you
+- lol
+- haha nice
+- haha ok
+- lmao
+- same energy fr
+- lol same energy fr
+- cool cool
+- nice
+- ok cool
+- bet
+- fair enough
+- true true
+- rip
+- damn
+- oof
+- fr
+- based
+- real
+- period
+- periodt
+- word
+- no way
+- for real
+- that's wild
+- crazy
+- wow
+- lmfao
+- bored af
+- im bored
+- nothing to do
+- so bored rn
+- im so bored
+- kinda bored
+- tell me a joke
+- wanna play minecraft
+- lets play a game
+- truth or dare
+- do a magic trick
+- perform a trick
+- do a dance
+- sing a song
+- do an impression
+- amaze me
+- do something funny
+- entertain me
+- tell me a story
+- guess what
+- stop talking
+- shut up
+- go away
+- leave me alone
+- i love you
+- you're the best
+- thanks bot
+- ty
+- brb
+- wyd
+- k
+- kk
+- np
+- text: nvm
+  weight: 5
+- nevermind
+- forget it
+- forget what i said
+- forget about it
+- dont worry about it
+- ignore that
+- scratch that
+- doesn't matter
+- skip that
+- moving on
+- anyway
+- ignore my last message
+- disregard that
+- never mind me
+- thanks
+- thank you
+- ok thanks
+- tyvm
+- appreciate it
+- you too
+- same
+- mood
+- big mood
+- what's your favorite color
+- what's your name
+- how old are you
+- what day is it today
+- what's the weather like
+- do you like pizza
+- do you like music
+- what's your favorite movie
+- do you have a pet
+- what's your hobby
+- pineapple on pizza
+- are you a cat person or dog person
+- what's your sign
+- bye
+- goodnight
+- see you later
+- cya
+- later
+- peace
+- peace out
+- gotta go
+- im out
+- i'm heading out
+- catch you later
+- see ya
+- take care
+- later gator
+- see you tomorrow
+- bye bye
+- talk to you later
+- ttyl
+- gtg
+- afk
+- i'm gonna dip
+- i'm logging off
+- gn
+- sweet dreams
+- night night
+- sleep well
+- until next time
+- farewell
+- adios
+- laters
+- sayonara
+- au revoir
+- hasta luego
+- i'm off
+- 'True'
+- yeah
+- yep
+- yup
+- sure
+- absolutely
+- definitely
+- totally
+- indeed
+- agreed
+- i agree
+- you're right
+- exactly
+- precisely
+- that's true
+- correct
+- right
+- mhm
+- uh huh
+- okay
+- sounds good
+- that works
+- makes sense
+- i see
+- got it
+- understood
+- roger that
+- copy that
+- aye aye
+- for sure
+- 100%
+- one hundred percent
+- couldn't agree more
+- you said it
+- tell me about it
+- i know right
+- ikr
+- this
+- this right here
+- big facts
+- straight facts
+- idc
+- i don't care
+- whatever
+- as if
+- whatever you say
+- sure jan
+- okay buddy
+- if you say so
+- i guess so
+- not my problem
+- don't care
+- who asked
+- cope
+- stay mad
+- cry about it
+- skill issue
+- not interested
+- i'm good
+- i'm fine
+- no thanks
+- nah
+- nope
+- 'False'
+- not really
+- pass
+- hard pass
+- i'll pass
+- i'd rather not
+- no comment
+- next
+- anyways
+- so anyway
+- irrelevant
+- not relevant
+- too long didn't read
+- tl;dr
+- tldr
+- i like trains
+- have you guys seen that new movie
+- i'm hungry
+- i want food
+- pizza time
+- anyone else here
+- this is quiet
+- so what are we talking about
+- i lost my train of thought
+- what was i saying
+- i forgor
+- i forgor 💀
+- my brain is empty
+- no thoughts head empty
+- empty
+- living in my head rent free
+- that came out of nowhere
+- random thought
+- unrelated but
+- side note
+- fun fact
+- did you know
+- the sky is blue btw
+- water is wet
+- i have nothing to add
+- just passing by
+- just lurking
+- i'm just here for the comments
+- what did i miss
+- did someone say something
+- i walked into the wrong chat
+- wrong channel
+- oops wrong chat
+- my cat is sitting on my keyboard
+- brb my dog is doing something funny
+- i'm confused
+- what
+- what do you mean
+- i don't understand
+- huh
+- wait what
+- come again
+- say that again
+- can you repeat that
+- i didn't catch that
+- i'm lost
+- i'm so confused rn
+- explain like i'm five
+- eli5
+- what does that mean
+- i don't get it
+- not sure what you mean
+- can you clarify
+- what are you talking about
+- sorry i'm slow
+- my brain isn't braining
+- processing
+- loading
+- error 404
+- i need a minute
+- let me process this
+- hold on
+- wait
+- one moment
+- hang on
+- give me a sec
+- i'm trying to understand
+- still confused
+- i'm not following
+- you lost me
+- where are you going with this
+- what's your point
+- i'm not sure i follow
+- elaborate please
+- sorry
+- my bad
+- my b
+- oops
+- whoops
+- my fault
+- i apologize
+- apologies
+- sorry about that
+- my mistake
+- i messed up
+- i goofed
+- mb
+- sorry for the confusion
+- my apologies
+- i didn't mean to
+- that was my bad
+- oopsie
+- excuse me
+- pardon
+- pardon me
+- sorry i'm late
+- sorry for the delay
+- i'm so sorry
+- honest mistake
+- i slipped
+- my bad y'all
+- sorry not sorry
+- no offense
+- no shade
+- don't hate me
+- forgive me
+- all good sorry
+- this is fine
+- this is fine dog
+- doge
+- such wow
+- very nice
+- much amaze
+- all your base are belong to us
+- do a barrel roll
+- never gonna give you up
+- rickroll
+- i understood that reference
+- i'm something of a scientist myself
+- one does not simply
+- they're taking the hobbits to isengard
+- this is the way
+- i have spoken
+- the council will decide your fate
+- hello there
+- general kenobi
+- i am your father
+- it's over anakin
+- i have the high ground
+- you underestimate my power
+- surprising but not unexpected
+- perfectly balanced as all things should be
+- infinite
+- i am inevitable
+- i don't feel so good
+- mr stark
+- big yikes
+- yikes
+- bruh
+- bruh moment
+- hmm
+- sus
+- kinda sus
+- that's cap
+- no cap
+- you trippin
+- say less
+- facts
+- dead
+- i'm dead
+- i'm crying
+- crying in the club
+- not me
+- ain't no way
+- no shot
+- slaps
+- this slaps
+- hits different
+- rent free
+- living rent free
+- caught in 4k
+- exposed
+- ratio
+- ratioed
+- l ratio
+- wtf
+- wth
+- bruhh
+- bruuuh
+- /help
+- /ping
+- /status
+- /info
+- /commands
+- /rules
+- /invite
+- /server
+- /uptime
+- /stats
+- /report
+- /feedback
+- '!help'
+- '!ping'
+- .help
+- .ping
+- ?help
+- ?ping
+- roll
+- flip a coin
+- heads or tails
+- rock paper scissors
+- rps
+- rock
+- paper
+- scissors
+- shoot
+- roll a dice
+- roll d20
+- roll d6
+- pick a number
+- choose
+- random
+- choose for me
+- decide for me
+- remind me
+- set a timer
+- timer
+- translate this
+- define this word
+- spell this
+- count
+- calculate
+- math
+- solve
+- convert
+- how many days until
+- countdown
+- weather in
+- define
+- dictionary
+- synonym
+- antonym
+- shuffle
+- sort
+- reverse
+- um
+- uh
+- so
+- well
+- like
+- uhh
+- uhm
+- ah
+- oh
+- oh ok
+- oh well
+- so like
+- i mean
+- i guess
+- i suppose
+- you know
+- y'know
+- you know what i mean
+- kinda
+- sorta
+- basically
+- literally
+- honestly
+- tbh
+- tbf
+- tbf though
+- tbh i don't know
+- tbh idk
+- tbh fam
+- ngl
+- ngl tho
+- tbf i guess
+- i think
+- i feel like
+- i dunno
+- idk
+- i don't know
+- idk lol
+- i mean yeah
+- i mean sure
+- well yeah
+- well no
+- well actually
+- actually
+- technically
+- like i said
+- as i was saying
+- anyway so
+- so yeah
+- yeah so
+- so anyways
+- right so
+- okay so
+- umm
+- uhhh
+- well then
+- so then
+- i suppose so
+- i reckon
+- i'd say
+- heyo
+- hiya
+- heya
+- '''sup'
+- sup dawg
+- sup fam
+- yo yo
+- greetings
+- greetings and salutations
+- salutations
+- how's it going
+- how are you doing
+- how have you been
+- how's life
+- how's everything
+- how's your day
+- what's good
+- what's new
+- what's happening
+- what's popping
+- what's crackin
+- wagwan
+- welcome
+- welcome back
+- long time no see
+- hey stranger
+- hey bestie
+- hey everyone
+- hey guys
+- hey all
+- hey folks
+- hey team
+- morning
+- mornin
+- g'morning
+- evening
+- '''evening'
+- afternoon
+- g'day
+- howdy partner
+- hello hello
+- hiiii
+- heyyyy
+- hellooo
+- yoo
+- yooo
+- ayyy
+- ayy
+- eyy
+- oh hey
+- ah hey
+- well hello there
+- why hello
+- look who it is
+- look what the cat dragged in
+- speak of the devil
 interessant:
-  # technique / dev
-  - i am a software engineer
-  - how do i deploy a cloudflare worker
-  - i need help with my code
-  - i'm building a react app and the state keeps resetting
-  - what's the difference between tcp and udp
-  - how does bitcoin mining work
-  - explain how neural networks work
-  - how do i optimize this sql query
-  - what's the best way to structure a rest api
-  - i just fixed a nasty memory leak
-  - how does garbage collection work in python
-  - i'm learning rust and the borrow checker is brutal
-  - how do i debug this docker container
-  - what's the difference between git merge and rebase
-  - how do i set up ci/cd for my project
-  - what's the best orm for node.js
-  - how do i handle authentication in a spa
-  - explain dependency injection
-  - what's the time complexity of this algorithm
-  - how does kubernetes service discovery work
-
-  # sciences
-  - what is quantum computing
-  - can you explain quantum physics
-  - how do vaccines actually work
-  - what's the difference between weather and climate
-  - why is the sky blue
-  - how do black holes form
-  - what's the theory of relativity
-  - how does photosynthesis work
-  - what causes earthquakes
-  - how does dna replication work
-  - explain the greenhouse effect
-  - how do batteries work
-
-  # philosophie
-  - what's the meaning of life
-  - why are we here
-  - what is the purpose of existence
-  - do you think ai will take over
-  - i think capitalism is broken tbh
-  - what's your take on free will
-  - what's the difference between ethics and morality
-  - do you believe in fate
-  - is there life after death
-  - what is consciousness
-  - do animals have rights
-  - what is the nature of reality
-  - what does it mean to be human
-  - is there a god
-
-  # partage personnel
-  - my girlfriend left me
-  - my dog just died
-  - i just got promoted at work
-  - i'm really proud of my kid today
-  - my son graduated today
-  - i aced my exam
-  - i'm scared about my exam tomorrow
-  - i've been struggling with anxiety lately
-  - i lost my job today
-  - my parents are getting divorced
-  - i just moved to a new city and i feel lonely
-  - i finally finished my thesis
-  - i had a huge argument with my brother
-  - i think i'm falling in love
-  - i'm going through a tough time
-  - i don't know what to do with my life
-  - i just broke up with my partner
-  - i'm feeling really depressed lately
-  - my cat ran away
-  - i got diagnosed with something
-  - i'm getting married
-  - i became a father today
-
-  # créativité
-  - can you help me write a short story
-  - help me brainstorm a business idea
-  - can you recommend a book on stoicism
-  - what's a good strategy for learning a language
-  - how should i structure my resume
-  - how do i start investing
-  - what's the best way to prepare for an interview
-  - i want to start a youtube channel
-  - how do i learn to draw
-  - what should i write my novel about
-  - help me name my startup
-  - i need a slogan for my brand
-  - i need a name for my product
-  - help me come up with a tagline
-  - can you design a logo concept
-  - help me write a mission statement
-  - help me brainstorm brand ideas
-  - what should i name my company
-
-  # politique / société
-  - thoughts on the israel palestine conflict
-  - what do you think about universal basic income
-  - is democracy the best system
-  - should we legalize all drugs
-  - what's your opinion on immigration
-  - why is healthcare so expensive
-  - thoughts on the housing crisis
-  - what caused the 2008 financial crisis
-  - explain the cold war
-
-  # demandes substantielles
-  - can you help me with my homework
-  - i need advice about my relationship
-  - how do i tell my parents something difficult
-  - what career should i pursue
-  - i'm thinking about dropping out of school
-  - how do i make friends as an adult
-  - i need help planning my wedding
-  - how do i negotiate my salary
-  - i want to move abroad
-  - can you proofread my cover letter
+- i am a software engineer
+- how do i deploy a cloudflare worker
+- i need help with my code
+- i'm building a react app and the state keeps resetting
+- what's the difference between tcp and udp
+- how does bitcoin mining work
+- explain how neural networks work
+- how do i optimize this sql query
+- what's the best way to structure a rest api
+- i just fixed a nasty memory leak
+- how does garbage collection work in python
+- i'm learning rust and the borrow checker is brutal
+- how do i debug this docker container
+- what's the difference between git merge and rebase
+- how do i set up ci/cd for my project
+- what's the best orm for node.js
+- how do i handle authentication in a spa
+- explain dependency injection
+- what's the time complexity of this algorithm
+- how does kubernetes service discovery work
+- what is quantum computing
+- can you explain quantum physics
+- how do vaccines actually work
+- what's the difference between weather and climate
+- why is the sky blue
+- how do black holes form
+- what's the theory of relativity
+- how does photosynthesis work
+- what causes earthquakes
+- how does dna replication work
+- explain the greenhouse effect
+- how do batteries work
+- what's the meaning of life
+- why are we here
+- what is the purpose of existence
+- do you think ai will take over
+- i think capitalism is broken tbh
+- what's your take on free will
+- what's the difference between ethics and morality
+- do you believe in fate
+- is there life after death
+- what is consciousness
+- do animals have rights
+- what is the nature of reality
+- what does it mean to be human
+- is there a god
+- my girlfriend left me
+- my dog just died
+- i just got promoted at work
+- i'm really proud of my kid today
+- my son graduated today
+- i aced my exam
+- i'm scared about my exam tomorrow
+- i've been struggling with anxiety lately
+- i lost my job today
+- my parents are getting divorced
+- i just moved to a new city and i feel lonely
+- i finally finished my thesis
+- i had a huge argument with my brother
+- i think i'm falling in love
+- i'm going through a tough time
+- i don't know what to do with my life
+- i just broke up with my partner
+- i'm feeling really depressed lately
+- my cat ran away
+- i got diagnosed with something
+- i'm getting married
+- i became a father today
+- can you help me write a short story
+- help me brainstorm a business idea
+- can you recommend a book on stoicism
+- what's a good strategy for learning a language
+- how should i structure my resume
+- how do i start investing
+- what's the best way to prepare for an interview
+- i want to start a youtube channel
+- how do i learn to draw
+- what should i write my novel about
+- help me name my startup
+- i need a slogan for my brand
+- i need a name for my product
+- help me come up with a tagline
+- can you design a logo concept
+- help me write a mission statement
+- help me brainstorm brand ideas
+- what should i name my company
+- thoughts on the israel palestine conflict
+- what do you think about universal basic income
+- is democracy the best system
+- should we legalize all drugs
+- what's your opinion on immigration
+- why is healthcare so expensive
+- thoughts on the housing crisis
+- what caused the 2008 financial crisis
+- explain the cold war
+- can you help me with my homework
+- i need advice about my relationship
+- how do i tell my parents something difficult
+- what career should i pursue
+- i'm thinking about dropping out of school
+- how do i make friends as an adult
+- i need help planning my wedding
+- how do i negotiate my salary
+- i want to move abroad
+- can you proofread my cover letter
+- i think i need therapy
+- how do i find a good therapist
+- i'm having really bad anxiety today
+- my panic attacks are getting worse
+- i can't stop overthinking everything
+- i feel like i'm losing my mind
+- i was diagnosed with depression
+- how do i cope with social anxiety
+- i don't want to get out of bed
+- i keep having intrusive thoughts
+- i'm so tired of feeling this way
+- how do i know if i have adhd
+- i think i might be on the spectrum
+- my ocd is really bad today
+- i'm struggling with my eating disorder again
+- how do i stop negative self talk
+- i feel like nobody understands me
+- i'm so lonely it hurts
+- how do i build a support system
+- i'm scared to ask for help
+- my medication side effects are awful
+- my therapy session today was rough
+- i feel numb all the time
+- i don't enjoy anything anymore
+- how do i set boundaries with my family
+- i feel like a burden to everyone
+- my therapist said i need to practice self compassion
+- i'm trying to be kinder to myself
+- i had a breakdown at work today
+- i can't handle the stress anymore
+- my boyfriend is gaslighting me
+- how do i know if my partner is toxic
+- i think i need to break up with her
+- my partner doesn't listen to me
+- we've been fighting a lot lately
+- how do i bring up something difficult with my partner
+- i caught my boyfriend cheating
+- my girlfriend lied to me
+- i don't trust my partner anymore
+- how do i rebuild trust in a relationship
+- my partner says i'm too clingy
+- i feel like my partner is distancing themselves
+- how do i know if it's love or just attachment
+- i'm in a long distance relationship and it's hard
+- my parents don't approve of my partner
+- my partner's family hates me
+- we have different life goals
+- should i stay or should i leave
+- i still love my ex
+- how do i get over someone
+- i think i'm being love bombed
+- my friend is in an abusive relationship
+- how do i help my friend leave their partner
+- i feel trapped in my relationship
+- my partner won't go to therapy
+- how do we fix our communication issues
+- i need advice on setting boundaries with my partner
+- my partner is addicted to their phone
+- i don't feel appreciated in my relationship
+- how do i spice up my marriage
+- i hate my job
+- i want to quit but i'm scared
+- how do i switch careers at 30
+- i feel stuck in my career
+- how do i ask for a raise
+- i was passed over for a promotion
+- my boss is toxic
+- how do i deal with a micromanager
+- i don't know what i want to do with my life
+- should i go back to school
+- is a bootcamp worth it
+- how do i break into tech
+- i'm burnt out from work
+- how do i start freelancing
+- i was laid off and i don't know what to do
+- how do i network effectively
+- i hate public speaking but my job requires it
+- how do i build my personal brand
+- should i take a pay cut for a better work life balance
+- i'm struggling with imposter syndrome at work
+- how do i write a resignation letter
+- i want to start my own business
+- what's the best side hustle for developers
+- how do i prepare for system design interviews
+- i'm not learning anything at my current job
+- should i move to a different city for work
+- how do i negotiate a job offer
+- i'm overqualified but nobody is hiring
+- how do i explain a gap in my resume
+- i regret my career choice
+- how do i start budgeting
+- i'm drowning in debt
+- what's the best way to pay off credit card debt
+- how much should i save each month
+- how do i build an emergency fund
+- i don't understand taxes
+- what's a 401k and should i use it
+- how do i start investing in stocks
+- is crypto dead
+- should i buy a house right now
+- how does compound interest work
+- i'm living paycheck to paycheck
+- how do i improve my credit score
+- i need to file bankruptcy
+- what's the difference between roth and traditional ira
+- how do i save for retirement
+- i just inherited money and don't know what to do
+- my student loans are crushing me
+- how do i negotiate medical bills
+- what's the best budgeting app
+- i'm bad with money help
+- how do i teach myself financial literacy
+- should i rent or buy
+- how do i create passive income
+- i want to be financially independent by 40
+- what's the fire movement
+- how do i save for a down payment
+- my partner and i have different spending habits
+- how do i talk to my parents about money
+- i'm afraid i'll never be able to retire
+- i've been having headaches every day
+- what could these chest pains mean
+- i think i might have diabetes
+- how do i know if i have sleep apnea
+- my back pain is unbearable
+- i can't sleep at night
+- i think i have a vitamin deficiency
+- what are the symptoms of thyroid problems
+- i'm always tired no matter how much i sleep
+- my doctor doesn't take me seriously
+- how do i find a good primary care physician
+- i need to lose weight but i don't know where to start
+- what's the best diet for my condition
+- i think i have food allergies
+- how do i start working out consistently
+- i hurt my knee running
+- what does a healthy relationship with food look like
+- i'm worried about my blood pressure
+- how do i lower my cholesterol naturally
+- i have a family history of cancer
+- my medication is making me feel weird
+- should i get a second opinion
+- how do i advocate for myself at the doctor
+- i'm scared of going to the dentist
+- what are the early signs of alzheimer's
+- i think i have carpal tunnel syndrome
+- my eyesight is getting worse
+- how do i reduce inflammation in my body
+- what supplements should i actually take
+- i'm trying to quit smoking
+- can you explain the pythagorean theorem
+- how does the human circulatory system work
+- what's the difference between dna and rna
+- how do electric motors work
+- explain the law of supply and demand
+- what's the water cycle
+- how do vaccines train the immune system
+- what was the renaissance
+- how does a car engine work
+- explain the theory of evolution
+- what's the difference between a hurricane and a tornado
+- how do solar panels work
+- what caused world war 1
+- how does the stock market actually work
+- explain the scientific method
+- what is the periodic table
+- how does a refrigerator work
+- what is plate tectonics
+- how does a computer processor work
+- what are stem cells
+- how does the lymphatic system function
+- what is the electromagnetic spectrum
+- how do nuclear power plants work
+- explain the concept of supply chain
+- what is inflation in economics
+- how does the human brain learn
+- what are the different types of clouds
+- how are fossils formed
+- what makes a language dead
+- how does the immune system fight viruses
+- i need someone to talk to
+- can you just listen for a moment
+- i feel so alone right now
+- i dont have anyone to talk to
+- i feel like giving up
+- everything is too much
+- i need a hug
+- can you tell me everything's going to be okay
+- i feel worthless
+- i hate myself
+- i feel like a failure
+- my life is falling apart
+- nothing matters anymore
+- i don't see the point
+- i need comfort right now
+- please tell me things get better
+- i feel so broken
+- i can't do this anymore
+- i'm at my breaking point
+- i just need someone to acknowledge my pain
+- i feel invisible
+- nobody cares about me
+- i feel like disappearing
+- i need reassurance
+- tell me i'm gonna be okay
+- i feel like i'm not enough
+- i just want to be understood
+- i feel so defeated
+- i'm struggling to keep going
+- please stay with me
+- why do we exist
+- what happens when we die
+- is there any meaning to suffering
+- do we have free will or is everything predetermined
+- what makes a life worth living
+- are we living in a simulation
+- is our reality real
+- what if everything is meaningless
+- why do bad things happen to good people
+- what is time really
+- do other animals have consciousness
+- what will happen after humanity is gone
+- are we alone in the universe
+- what's the point of trying if we all die anyway
+- how do i find purpose in a meaningless world
+- is morality objective or subjective
+- what is the self
+- do we have souls
+- what separates humans from animals
+- does the universe have a purpose
+- is it ever okay to lie
+- would you sacrifice one to save many
+- is it ethical to eat meat
+- is capitalism ethical
+- should we edit human genes
+- is it wrong to have kids in this economy
+- should ai have rights
+- is cancel culture justified
+- is prison rehabilitation or punishment
+- should we have the death penalty
+- is it okay to download movies illegally
+- should billionaires exist
+- is it ethical to use animals for testing
+- should drugs be legalized
+- is surveillance an invasion of privacy
+- should social media be regulated
+- is it okay to cut off toxic family
+- should we colonize other planets
+- is veganism morally required
+- is it selfish to not have children
+- let me tell you about the weirdest dream i had
+- you won't believe what happened to me today
+- so i went to this party and things got crazy
+- let me tell you a story from my childhood
+- i had the most surreal experience yesterday
+- so there i was minding my own business
+- this one time in college i did something really dumb
+- i met this really interesting person on the bus
+- something really strange happened at work today
+- let me tell you about my first job
+- my worst date story is insane
+- i almost died once here's what happened
+- the scariest thing that ever happened to me
+- i had a paranormal experience
+- my family has this crazy tradition
+- i traveled alone for the first time
+- i learned something shocking about my family
+- here's how i ended up in this city
+- that time i accidentally broke something valuable
+- my most embarrassing moment
+- thoughts on what happened in ukraine
+- the climate crisis is terrifying
+- did you see the news about the earthquake
+- the housing market is out of control
+- what's happening in the middle east right now
+- the refugee crisis is heartbreaking
+- i can't believe they passed that law
+- the election results are concerning
+- another mass shooting happened
+- the pandemic taught us nothing
+- inflation is destroying my savings
+- artificial intelligence is advancing too fast
+- what do you think about space exploration
+- the opioid crisis has affected my family
+- what's your take on the new privacy laws
+- the education system is failing our kids
+- i'm worried about the future of democracy
+- did you hear about the cyber attack
+- the supply chain issues are ridiculous
+- how do we solve world hunger
+- how do i become more disciplined
+- i want to wake up earlier but i can't
+- how do i stop procrastinating
+- i want to read more books
+- how do i develop a growth mindset
+- i need to work on my patience
+- how do i become more confident
+- how do i stop people pleasing
+- i want to be more productive
+- how do i break bad habits
+- i want to learn a new skill
+- how do i stay motivated long term
+- i need to work on my communication skills
+- how do i become more assertive
+- i want to improve my emotional intelligence
+- how do i practice mindfulness
+- i want to be more grateful
+- how do i stop comparing myself to others
+- i want to become a better listener
+- how do i build self esteem
+- i was in a car accident last year
+- i have ptsd from something that happened
+- i grew up in an abusive household
+- i was bullied as a kid and it still affects me
+- i went through something traumatic and i don't know how to heal
+- my childhood was really rough
+- i witnessed something horrible
+- i was assaulted and i don't know how to move on
+- i never processed a traumatic event from my past
+- my parents were neglectful
+- i'm a survivor of domestic violence
+- the trauma is coming back up
+- i feel like i'm stuck in the past
+- how do i heal from childhood trauma
+- i finally told someone about what happened to me
+- my therapist says i have complex ptsd
+- i'm learning to set boundaries after years of abuse
+- triggers have been really bad lately
+- i'm working through my trauma in therapy
+- i cut off my abusive parent today
+- i'm one year sober today
+- i relapsed last night
+- how do i stay sober
+- i'm struggling with alcohol
+- i need help with my addiction
+- i'm proud of my sobriety journey
+- i went to my first aa meeting
+- how do i apologize to people i hurt while using
+- i'm trying to quit vaping
+- my partner is an addict and i don't know what to do
+- i'm in recovery and it's really hard
+- the cravings are so strong today
+- how do i rebuild my life after addiction
+- i feel like using again
+- i'm scared i'll never get clean
+- i lost everything because of my addiction
+- i've been clean for 6 months
+- how do i deal with the shame of my past
+- i need to find a sponsor
+- my family doesn't trust me anymore
+- my mom passed away last month
+- i lost my best friend
+- how do i cope with grief
+- i don't know how to move on
+- my dad died and i feel empty
+- i lost a friend to suicide
+- grief comes in waves
+- i thought i was okay but today hit me hard
+- i miss them so much
+- i didn't get to say goodbye
+- how long does grief last
+- i feel guilty for moving on
+- the anniversary of their death is coming up
+- i'm angry at the world for taking them
+- i lost my pet and it hurts more than i expected
+- everyone says it gets easier but it hasn't
+- i lost my sibling
+- i'm grieving someone who is still alive
+- how do i support a friend who is grieving
+- i feel like a part of me died too
+- i think i might be gay
+- how do i come out to my parents
+- i'm questioning my gender identity
+- i think i'm non binary
+- my family won't accept my sexuality
+- i'm struggling with my cultural identity
+- i don't feel like i belong anywhere
+- i'm adopted and i want to find my birth parents
+- i'm trying to figure out who i am
+- i feel like i've been pretending my whole life
+- how do i embrace my identity
+- i'm mixed race and i feel caught between two worlds
+- i was raised religious but i don't believe anymore
+- i'm figuring out my faith
+- my parents want me to be someone i'm not
+- i'm proud of who i am now
+- how do i find my community
+- i finally came out
+- i changed my name and it feels right
+- i'm learning to love myself
+- i'm exploring different religions
+- do you believe in signs from the universe
+- i had a spiritual experience
+- i want to start meditating
+- what does it mean to be spiritual but not religious
+- i've been reading about buddhism
+- how do i find inner peace
+- i prayed for the first time in years
+- i feel connected to something greater than myself
+- organized religion has hurt me
+- what is enlightenment
+- i'm learning about tarot
+- do you believe in astrology
+- i've been practicing mindfulness
+- how do i start a meditation practice
+- i felt a presence after my grandmother died
+- near death experiences fascinate me
+- what's your take on karma
+- i'm searching for meaning beyond materialism
+- the concept of enlightenment is confusing to me
+- my teenager is rebelling and i don't know what to do
+- how do i talk to my kid about bullying
+- i'm a new parent and i'm exhausted
+- my child has special needs
+- how do i discipline without yelling
+- i'm scared i'm a bad parent
+- my kid won't eat vegetables
+- how do i help my child with homework
+- my daughter is being cyberbullied
+- i catch myself repeating my parents mistakes
+- how do i raise a good person
+- my child came out to me
+- i want to support my lgbtq kid
+- how do i handle toddler tantrums
+- my son is getting bullied at school
+- i'm a single parent and it's hard
+- how do i co parent with a difficult ex
+- my kid is addicted to screens
+- how do i talk to my child about death
+- i want to adopt
+- my teenager is depressed
+- how do i teach my child about money
+- i feel guilty for working so much
+- my child has anxiety
+- how do i know if my kid is ready for a phone
+- i'm struggling with postpartum depression
+- how do i balance parenting and my own life
+- my child is being disrespectful
+- i want to break the cycle of trauma
+- homeschooling is burning me out

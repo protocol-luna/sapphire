@@ -1,72 +1,367 @@
-# Exemples pour les axes émotionnels continus (valence, arousal).
-# Même mécanique que examples.yml : Sapphire calcule un centroïde par pôle
-# et le score final est une différence de similarité cosinus (pas un label).
-#
-# valence: positive vs negative
-# arousal: high (agité/intense) vs low (calme/plat)
-
 positive:
-  - hell yeah
-  - love that
-  - thanks a lot
-  - this is great
-  - youre awesome
-  - glad to hear that
-  - thats amazing
-  - im happy for you
-  - nice one
-  - appreciate you
-  - this made my day
-  - good stuff
-  - im excited about this
-  - thats sweet of you
-  - youre the best
-
+- hell yeah
+- love that
+- thanks a lot
+- this is great
+- youre awesome
+- glad to hear that
+- thats amazing
+- im happy for you
+- nice one
+- appreciate you
+- this made my day
+- good stuff
+- im excited about this
+- thats sweet of you
+- youre the best
+- i love this
+- so happy right now
+- feeling great today
+- this is wonderful
+- what a blessing
+- im so grateful
+- best news ever
+- i feel amazing
+- that's fantastic
+- thrilled for you
+- beautiful
+- gorgeous
+- stunning
+- incredible
+- magnificent
+- lovely
+- delightful
+- charming
+- splendid
+- superb
+- outstanding
+- phenomenal
+- terrific
+- wonderful
+- marvellous
+- fabulous
+- excellent
+- perfect
+- such a relief
+- that makes me so happy
+- im over the moon
+- couldn't be happier
+- best day ever
+- i'm on cloud nine
+- feeling blessed
+- life is good
+- everything is falling into place
+- i did it
+- we did it
+- so proud of myself
+- so proud of you
+- you made my day
+- that's so kind of you
+- i appreciate that so much
+- this means a lot
+- thank you so much
+- i feel so loved
+- what a beautiful day
+- things are looking up
+- i'm optimistic about the future
+- i feel hopeful
+- this is exactly what i needed
+- you have no idea how much this helps
+- i feel so supported
+- this community is amazing
+- i love you guys
+- sending good vibes
+- positive energy
+- so much love
+- peace and love
+- stay blessed
+- keep shining
+- you're a gem
+- absolute legend
+- king
+- queen
+- iconic
+- legendary
 negative:
-  - shut up
-  - i dont trust you
-  - this is annoying
-  - youre useless
-  - i hate this
-  - leave me alone
-  - thats messed up
-  - im so done with this
-  - you never listen
-  - this sucks
-  - im pissed off
-  - dont talk to me
-  - youre lying
-  - this is bullshit
-  - im tired of this
-
+- shut up
+- i dont trust you
+- this is annoying
+- youre useless
+- i hate this
+- leave me alone
+- thats messed up
+- im so done with this
+- you never listen
+- this sucks
+- im pissed off
+- dont talk to me
+- youre lying
+- this is bullshit
+- im tired of this
+- i hate everything
+- this is the worst
+- i'm so frustrated
+- why does this always happen
+- i can't stand this
+- this is ridiculous
+- i'm disappointed
+- you let me down
+- i expected better
+- this is unacceptable
+- i deserve better
+- i feel betrayed
+- how could you
+- i can't trust anyone
+- people suck
+- i hate people
+- society is garbage
+- this world is awful
+- everything is terrible
+- nothing ever works out
+- i hate my life
+- my life is a mess
+- i'm so disappointed in you
+- you're so toxic
+- i can't deal with you
+- get away from me
+- don't touch me
+- stop talking to me
+- i feel so angry
+- i'm seething
+- i'm fuming
+- this makes my blood boil
+- i'm sick of this
+- i'm fed up
+- i've had enough
+- enough is enough
+- this is the last straw
+- i'm done trying
+- i give up
+- what's the point
+- it's pointless
+- useless
+- worthless
+- i feel so bitter
+- i'm holding a grudge
+- i'll never forgive them
+- this is so unfair
+- life is so unfair
+- why me
+- what did i do to deserve this
+- i'm being punished
+- i can't catch a break
+- i hate you
+- i wish i never met you
+- i regret everything
+- it's all my fault
+- i ruined everything
+- i'm a terrible person
+- i don't deserve happiness
+- this is disgusting
+- that's vile
+- i feel sick
+- this is toxic
+- i'm surrounded by negativity
 high_arousal:
-  - WHAT THE HELL
-  - omg omg omg
-  - im freaking out right now
-  - THIS IS INSANE
-  - i cant believe this happened
-  - stop yelling at me
-  - im panicking
-  - this is URGENT
-  - i need to talk RIGHT NOW
-  - everything is going wrong
-  - im so hyped
-  - AAAAA
-  - im shaking rn
-  - this cant be happening
-
+- WHAT THE HELL
+- omg omg omg
+- im freaking out right now
+- THIS IS INSANE
+- i cant believe this happened
+- stop yelling at me
+- im panicking
+- this is URGENT
+- i need to talk RIGHT NOW
+- everything is going wrong
+- im so hyped
+- AAAAA
+- im shaking rn
+- this cant be happening
+- I CAN'T BELIEVE IT
+- OH MY GOD
+- OH MY GOD NO WAY
+- HOLY SHIT
+- HOLY CRAP
+- HOLY MOLY
+- WHAT
+- WAIT WHAT
+- NO FREAKING WAY
+- YOU'RE KIDDING
+- SHUT UP NO WAY
+- GET OUT OF HERE
+- NOOOOO
+- YESSSS
+- LET'S GOOOOO
+- LETS GO
+- WE DID IT
+- I'M SCREAMING
+- I'M CRYING
+- I CANNOT RIGHT NOW
+- THIS IS EVERYTHING
+- I'M LITERALLY SHAKING
+- MY HEART IS RACING
+- I'M SO EXCITED
+- I'M ABOUT TO EXPLODE
+- TOO MUCH EXCITEMENT
+- CAN'T CONTAIN MYSELF
+- I'M GONNA PASS OUT
+- THIS IS TOO MUCH
+- SEND HELP
+- EMERGENCY
+- HELP ME
+- I'M FREAKING OUT
+- MY MIND IS BLOWN
+- BLOWN AWAY
+- SPEECHLESS
+- I DON'T EVEN KNOW WHAT TO SAY
+- MY JAW DROPPED
+- SNATCHED MY WIG
+- DECEASED
+- I'M DECEASED
+- SCREAMING CRYING THROWING UP
+- LIVING FOR THIS
+- OBSESSED
+- I'M SO OBSESSED
+- THIS IS THE BEST DAY OF MY LIFE
+- I CAN'T BREATHE
+- DYING
+- I'M DYING
+- IN SHAMBLES
+- ABSOLUTELY SENDING ME
+- I'M IN TEARS
+- riot
+- LITERALLY HISTORIC
+- MOMENTOUS
+- GROUNDBREAKING
+- LIFE CHANGING
+- CALM DOWN
+- BREATHE
+- I NEED TO CALM DOWN
+- PANIC ATTACK
+- HYPERVENTILATING
+- I FORGOT HOW TO BREATHE
+- EVERYTHING HAPPENED SO FAST
+- I'M SPIRALING
+- ADRENALINE IS PUMPING
+- MY BLOOD IS BOILING
+- I'M SO ANGRY I COULD SCREAM
+- I'M LIVID
+- ABSOLUTELY FURIOUS
+- I'M SO DONE
 low_arousal:
-  - hi
-  - ok
-  - sure whatever
-  - i guess
-  - fine
-  - meh
-  - not much going on
-  - just chilling
-  - kinda tired
-  - nothing new
-  - im just here
-  - i dont really care either way
-  - its whatever
-  - all good on my end
+- hi
+- ok
+- sure whatever
+- i guess
+- fine
+- meh
+- not much going on
+- just chilling
+- kinda tired
+- nothing new
+- im just here
+- i dont really care either way
+- its whatever
+- all good on my end
+- yeah
+- yep
+- i suppose
+- if you say so
+- as you wish
+- doesn't matter
+- either way
+- doesn't bother me
+- i'm neutral
+- i have no opinion
+- i'm indifferent
+- i don't mind
+- go with whatever
+- you decide
+- i trust your judgment
+- i'm easy
+- i'm chill
+- relaxed
+- taking it easy
+- vibing
+- lounging
+- resting
+- sleepy
+- drowsy
+- yawn
+- i could use a nap
+- nap time
+- bed time
+- i'm winding down
+- unwinding
+- decompressing
+- zoning out
+- daydreaming
+- spacing out
+- in my own world
+- just existing
+- existing
+- breathing
+- being
+- in stillness
+- peaceful
+- calm
+- serene
+- tranquil
+- quiet
+- hushed
+- silent
+- mellow
+- low key
+- lowkey
+- modest
+- simple
+- plain
+- ordinary
+- typical
+- average
+- mundane
+- same old
+- routine
+- nothing special
+- same as always
+- another day
+- just another day
+- it is what it is
+- what can you do
+- such is life
+- c'est la vie
+- that's life
+- so it goes
+- anyway
+- anyhow
+- whatever happens happens
+- i'm at peace with it
+- acceptance
+- surrender
+- letting go
+- letting be
+- no expectations
+- not holding my breath
+- we'll see
+- time will tell
+- maybe
+- possibly
+- could be
+- perhaps
+- who knows
+- not sure
+- uncertain
+- unsure
+- ambivalent
+- conflicted
+- torn
+- on the fence
+- can't decide
+- undecided
+- idk
+- i don't know
+- i've got nothing
+- blank
+- empty
+- still
+- quiet mind
