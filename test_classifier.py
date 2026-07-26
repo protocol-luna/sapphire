@@ -11,6 +11,8 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import URLError
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+
 SAPPHIRE_URL = "http://127.0.0.1:3123/classify"
 TIMEOUT = 10
 

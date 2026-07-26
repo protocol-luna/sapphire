@@ -62,4 +62,5 @@ def classify(
 
 
 def get_default_examples_path() -> str:
-    return str(Path(__file__).parent / "examples.yml")
+    """Path to examples.yml — walks up from src/sapphire/ to repo root."""
+    return str(Path(__file__).resolve().parent.parent.parent / "examples.yml")
