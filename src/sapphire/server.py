@@ -346,8 +346,10 @@ async def respond(body: RespondRequest, request: Request):
         raise HTTPException(resp.status_code, f"krystal error: {await resp.aread()}")
 
     full_text: list[str] = []
+    t0 = time.monotonic()
 
     async def event_stream():
+        nonlocal t0
         async for line in resp.aiter_lines():
             if line.startswith("data: "):
                 payload = line[6:]
@@ -363,17 +365,46 @@ async def respond(body: RespondRequest, request: Request):
                     yield f"data: {payload}\n\n"
 
         text = "".join(full_text)
+        if is_degenerate_output(text):
+            log.warning("degenerate output discarded from stream: %r", text[:80])
+            yield "data: [DONE]\n\n"
+            return
+
         session_store.append_assistant_message(body.session_id, text)
         removed = session_store.cleanup_stale()
         if removed:
             log.info("cleaned up %d stale session(s)", removed)
+
+        elapsed = time.monotonic() - t0
+        emo_state = emotion_state.get(body.session_id)
 
         log.info(
             "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
             label, conf, valence, arousal, backend, body.text[:80],
         )
 
-        yield f"data: {json.dumps({'text': text, 'label': label, 'backend': backend, 'valence': valence, 'arousal': arousal})}\n\n"
+        meta = {
+            "text": text,
+            "label": label,
+            "backend": backend,
+            "valence": valence,
+            "arousal": arousal,
+            "prompt_tokens": 0,
+            "completion_tokens": len(text.split()),
+            "time_ms": round(elapsed * 1000),
+            "tokens_per_second": round(len(text.split()) / elapsed, 1) if elapsed > 0 else 0,
+            "emotion_state_valence": round(emo_state.get("valence", 0), 4),
+            "emotion_state_arousal": round(emo_state.get("arousal", 0), 4),
+            "classification_confidence": round(conf, 4),
+        } if body.debug else {
+            "text": text,
+            "label": label,
+            "backend": backend,
+            "valence": valence,
+            "arousal": arousal,
+        }
+
+        yield f"data: {json.dumps(meta)}\n\n"
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(
