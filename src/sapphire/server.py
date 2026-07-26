@@ -56,7 +56,7 @@ KRYSTAL_GENERIC_URL = os.environ.get(
     "KRYSTAL_GENERIC_URL", "http://127.0.0.1:3124"
 )
 KRYSTAL_SEMANTIC_URL = os.environ.get(
-    "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3125"
+    "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3124"
 )
 EXAMPLES_PATH = os.environ.get(
     "SAPPHIRE_EXAMPLES",
