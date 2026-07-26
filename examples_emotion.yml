@@ -1,0 +1,72 @@
+# Exemples pour les axes émotionnels continus (valence, arousal).
+# Même mécanique que examples.yml : Sapphire calcule un centroïde par pôle
+# et le score final est une différence de similarité cosinus (pas un label).
+#
+# valence: positive vs negative
+# arousal: high (agité/intense) vs low (calme/plat)
+
+positive:
+  - hell yeah
+  - love that
+  - thanks a lot
+  - this is great
+  - youre awesome
+  - glad to hear that
+  - thats amazing
+  - im happy for you
+  - nice one
+  - appreciate you
+  - this made my day
+  - good stuff
+  - im excited about this
+  - thats sweet of you
+  - youre the best
+
+negative:
+  - shut up
+  - i dont trust you
+  - this is annoying
+  - youre useless
+  - i hate this
+  - leave me alone
+  - thats messed up
+  - im so done with this
+  - you never listen
+  - this sucks
+  - im pissed off
+  - dont talk to me
+  - youre lying
+  - this is bullshit
+  - im tired of this
+
+high_arousal:
+  - WHAT THE HELL
+  - omg omg omg
+  - im freaking out right now
+  - THIS IS INSANE
+  - i cant believe this happened
+  - stop yelling at me
+  - im panicking
+  - this is URGENT
+  - i need to talk RIGHT NOW
+  - everything is going wrong
+  - im so hyped
+  - AAAAA
+  - im shaking rn
+  - this cant be happening
+
+low_arousal:
+  - hi
+  - ok
+  - sure whatever
+  - i guess
+  - fine
+  - meh
+  - not much going on
+  - just chilling
+  - kinda tired
+  - nothing new
+  - im just here
+  - i dont really care either way
+  - its whatever
+  - all good on my end

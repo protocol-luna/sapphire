@@ -23,6 +23,13 @@ import httpx
 import uvicorn
 
 from sapphire.classifier import load_examples, compute_centroids, classify, get_default_examples_path
+from sapphire.emotion import (
+    load_emotion_examples,
+    compute_emotion_centroids,
+    score_axes,
+    get_default_emotion_examples_path,
+    EmotionState,
+)
 from sapphire.proxy import proxy_single, proxy_stream
 
 logging.basicConfig(
@@ -43,16 +50,23 @@ EXAMPLES_PATH = os.environ.get(
     "SAPPHIRE_EXAMPLES",
     get_default_examples_path(),
 )
+EMOTION_EXAMPLES_PATH = os.environ.get(
+    "SAPPHIRE_EMOTION_EXAMPLES",
+    get_default_emotion_examples_path(),
+)
+EMOTION_DECAY = float(os.environ.get("SAPPHIRE_EMOTION_DECAY", "0.85"))
 
 embedder: TextEmbedding | None = None
 futile_centroid: np.ndarray | None = None
 interessant_centroid: np.ndarray | None = None
+emotion_centroids: dict[str, np.ndarray] | None = None
+emotion_state = EmotionState(decay=EMOTION_DECAY)
 http_client: httpx.AsyncClient | None = None
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    global embedder, futile_centroid, interessant_centroid, http_client
+    global embedder, futile_centroid, interessant_centroid, emotion_centroids, http_client
 
     log.info("loading embedding model BAAI/bge-small-en-v1.5...")
     embedder = TextEmbedding(
@@ -68,6 +82,12 @@ async def lifespan(_app: FastAPI):
     futile_centroid, interessant_centroid = compute_centroids(
         embedder, futile_examples, interessant_examples,
     )
+
+    log.info("loading emotion examples from %s", EMOTION_EXAMPLES_PATH)
+    emotion_examples = load_emotion_examples(EMOTION_EXAMPLES_PATH)
+    for pole, texts in emotion_examples.items():
+        log.info("  %s: %d examples", pole, len(texts))
+    emotion_centroids = compute_emotion_centroids(embedder, emotion_examples)
 
     http_client = httpx.AsyncClient(
         timeout=httpx.Timeout(120.0, connect=5.0),
@@ -108,14 +128,28 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
         raise HTTPException(400, "no user message found")
 
     last_user_text = user_msgs[-1].get("content", "")
+
+    # Un seul appel embedder, réutilisé pour le routing FUTILE/INTERESSANT
+    # et pour le scoring émotionnel — zéro latence supplémentaire.
+    emb = next(embedder.query_embed(last_user_text)) if last_user_text.strip() else None
+
     label, conf, sim_f, sim_i = classify(
         last_user_text, embedder, futile_centroid, interessant_centroid,
+        precomputed_emb=emb,
     )
+
+    valence, arousal = score_axes(emb, emotion_centroids)
+
+    # clé de conversation : id_slot sert déjà à isoler les contextes llama.cpp,
+    # on le réutilise ici. À défaut, retombe sur "default" (un seul état global).
+    conv_key = str(body.id_slot) if body.id_slot is not None else "default"
+    state = emotion_state.update(conv_key, valence, arousal)
 
     backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
     log.info(
-        "%s (Δ=%.3f, f=%.3f i=%.3f) | %s | %s",
-        label, conf, sim_f, sim_i, backend, last_user_text[:80],
+        "%s (Δ=%.3f, f=%.3f i=%.3f) | valence=%.3f arousal=%.3f (state v=%.3f a=%.3f) | %s | %s",
+        label, conf, sim_f, sim_i, valence, arousal,
+        state["valence"], state["arousal"], backend, last_user_text[:80],
     )
 
     payload = body.model_dump(exclude={"stream"}, exclude_none=True)
@@ -149,6 +183,17 @@ async def classify_endpoint(query: ClassifyQuery):
         label=label, confidence=round(conf, 4),
         sim_futile=round(sim_f, 4), sim_interessant=round(sim_i, 4),
     )
+
+
+@app.get("/emotion/{conv_key}")
+async def get_emotion(conv_key: str):
+    """État émotionnel courant (valence/arousal) d'une conversation.
+
+    À appeler depuis Jade après chaque réponse générée, pour ajuster délai,
+    burst mode, longueur de réponse, typo rate, etc. — voir la state machine
+    comportementale existante (topic fatigue, sleep cycles).
+    """
+    return emotion_state.get(conv_key)
 
 
 @app.get("/health")

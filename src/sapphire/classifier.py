@@ -46,11 +46,17 @@ def classify(
     embedder: TextEmbedding | None,
     futile_centroid: np.ndarray | None,
     interessant_centroid: np.ndarray | None,
+    precomputed_emb: np.ndarray | None = None,
 ) -> tuple[str, float, float, float]:
-    """Classify text as FUTILE or INTERESSANT via cosine similarity."""
+    """Classify text as FUTILE or INTERESSANT via cosine similarity.
+
+    Pass `precomputed_emb` to skip the embedder call when the caller already
+    computed the embedding for this text (e.g. to also feed emotion.score_axes
+    without embedding the same text twice).
+    """
     if embedder is None or futile_centroid is None or interessant_centroid is None:
         return "FUTILE", 0.0, 0.0, 0.0
-    emb = next(embedder.query_embed(text))
+    emb = precomputed_emb if precomputed_emb is not None else next(embedder.query_embed(text))
     norm = np.linalg.norm(emb)
     if norm == 0:
         return "FUTILE", 0.0, 0.0, 0.0
