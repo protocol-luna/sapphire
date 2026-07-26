@@ -52,3 +52,51 @@ async def proxy_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
     )
+
+
+async def call_backend_once(
+    client: httpx.AsyncClient,
+    backend: str,
+    messages: list[dict],
+    slot: int,
+    sampling_params: dict,
+    max_tokens: int = 2000,
+) -> str:
+    body = {
+        "messages": messages,
+        "id_slot": slot,
+        "cache_prompt": True,
+        "max_tokens": max_tokens,
+        **sampling_params,
+    }
+    resp = await client.post(f"{backend}/v1/chat/completions", json=body)
+    if not resp.is_success:
+        raise HTTPException(resp.status_code, f"krystal error: {resp.text[:200]}")
+    data = resp.json()
+    return data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+
+async def call_backend_with_retry(
+    client: httpx.AsyncClient,
+    backend: str,
+    messages: list[dict],
+    slot: int,
+    sampling_params: dict,
+    max_retries: int,
+    max_tokens: int = 2000,
+    log=None,
+) -> str:
+    last_response = ""
+    for attempt in range(max_retries + 1):
+        last_response = await call_backend_once(
+            client, backend, messages, slot, sampling_params, max_tokens,
+        )
+        from sapphire.degenerate import is_degenerate_output
+        if not is_degenerate_output(last_response):
+            return last_response
+        if log:
+            log.warning(
+                "degenerate output detected (attempt %d/%d): %r",
+                attempt + 1, max_retries + 1, last_response,
+            )
+    return last_response

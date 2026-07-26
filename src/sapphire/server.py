@@ -14,6 +14,7 @@ Usage:
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
@@ -30,7 +31,14 @@ from sapphire.emotion import (
     get_default_emotion_examples_path,
     EmotionState,
 )
-from sapphire.proxy import proxy_single, proxy_stream
+from sapphire.few_shot import (
+    load_few_shot_examples,
+    format_few_shot_examples,
+    inject_few_shot_into_conversation,
+)
+from sapphire.sessions import SessionStore
+from sapphire.degenerate import is_degenerate_output
+from sapphire.proxy import proxy_single, proxy_stream, call_backend_with_retry
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,6 +65,28 @@ EMOTION_EXAMPLES_PATH = os.environ.get(
 EMOTION_DECAY = float(os.environ.get("SAPPHIRE_EMOTION_DECAY", "0.85"))
 EMOTION_DEADZONE = float(os.environ.get("SAPPHIRE_EMOTION_DEADZONE", "0.06"))
 
+SYSTEM_PROMPT = os.environ.get(
+    "SAPPHIRE_SYSTEM_PROMPT",
+    "Your name is Luna. You are playful 21 year old girl",
+)
+FEW_SHOT_ENABLED = os.environ.get("SAPPHIRE_FEW_SHOT_ENABLED", "true").lower() == "true"
+FEW_SHOT_EXAMPLES_PATH = os.environ.get(
+    "SAPPHIRE_FEW_SHOT_EXAMPLES",
+    str(Path(__file__).resolve().parent.parent.parent / "few_shot_examples.yml"),
+)
+LLM_N_SLOTS = int(os.environ.get("SAPPHIRE_LLM_N_SLOTS", "1"))
+LLM_SESSION_TTL = float(os.environ.get("SAPPHIRE_LLM_SESSION_TTL", "600"))
+LLM_MAX_HISTORY = int(os.environ.get("SAPPHIRE_LLM_MAX_HISTORY", "20"))
+LLM_MAX_RETRIES = int(os.environ.get("SAPPHIRE_LLM_MAX_RETRIES", "2"))
+
+MIROSTAT_ENABLED = os.environ.get("SAPPHIRE_MIROSTAT_ENABLED", "true").lower() == "true"
+MIROSTAT_MODE = int(os.environ.get("SAPPHIRE_MIROSTAT_MODE", "2"))
+MIROSTAT_LR = float(os.environ.get("SAPPHIRE_MIROSTAT_LR", "0.1"))
+MIROSTAT_ENT = float(os.environ.get("SAPPHIRE_MIROSTAT_ENT", "5.0"))
+
+few_shot_examples: list[dict[str, str]] = []
+session_store: SessionStore | None = None
+
 embedder: TextEmbedding | None = None
 futile_centroid: np.ndarray | None = None
 interessant_centroid: np.ndarray | None = None
@@ -68,6 +98,7 @@ http_client: httpx.AsyncClient | None = None
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     global embedder, futile_centroid, interessant_centroid, emotion_centroids, http_client
+    global few_shot_examples, session_store
 
     log.info("loading embedding model BAAI/bge-small-en-v1.5...")
     embedder = TextEmbedding(
@@ -89,6 +120,17 @@ async def lifespan(_app: FastAPI):
     for pole, texts in emotion_examples.items():
         log.info("  %s: %d examples", pole, len(texts))
     emotion_centroids = compute_emotion_centroids(embedder, emotion_examples)
+
+    log.info("loading few-shot examples from %s", FEW_SHOT_EXAMPLES_PATH)
+    few_shot_examples = load_few_shot_examples(FEW_SHOT_EXAMPLES_PATH)
+    log.info("  %d few-shot examples (enabled=%s)", len(few_shot_examples), FEW_SHOT_ENABLED)
+
+    session_store = SessionStore(
+        system_prompt=SYSTEM_PROMPT,
+        ttl_seconds=LLM_SESSION_TTL,
+        n_slots=LLM_N_SLOTS,
+        max_history=LLM_MAX_HISTORY,
+    )
 
     http_client = httpx.AsyncClient(
         timeout=httpx.Timeout(120.0, connect=5.0),
@@ -164,6 +206,90 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
     return await proxy_single(http_client, backend, payload)
 
 
+class RespondRequest(BaseModel):
+    username: str = ""
+    text: str = Field(..., min_length=1)
+    session_id: str = "default"
+
+
+class RespondResult(BaseModel):
+    text: str
+    label: str
+    backend: str
+    valence: float
+    arousal: float
+
+
+def _sampling_params() -> dict:
+    if MIROSTAT_ENABLED:
+        return {
+            "mirostat": MIROSTAT_MODE,
+            "mirostat_lr": MIROSTAT_LR,
+            "mirostat_ent": MIROSTAT_ENT,
+            "repeat_penalty": 1.15,
+            "repeat_last_n": 64,
+        }
+    return {
+        "temperature": 0.8,
+        "top_k": 60,
+        "top_p": 0.9,
+        "min_p": 0.05,
+        "repeat_penalty": 1.15,
+        "repeat_last_n": 64,
+    }
+
+
+@app.post("/v1/respond", response_model=RespondResult)
+async def respond(body: RespondRequest):
+    if embedder is None or session_store is None:
+        raise HTTPException(503, "sapphire not ready")
+
+    emb = next(embedder.query_embed(body.text)) if body.text.strip() else None
+
+    label, conf, sim_f, sim_i = classify(
+        body.text, embedder, futile_centroid, interessant_centroid,
+        precomputed_emb=emb,
+    )
+    valence, arousal = score_axes(emb, emotion_centroids)
+    emotion_state.update(body.session_id, valence, arousal)
+
+    backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
+
+    session = session_store.append_user_message(body.session_id, body.username, body.text)
+
+    final_messages = session.messages
+    if FEW_SHOT_ENABLED and few_shot_examples:
+        fs_messages = format_few_shot_examples(few_shot_examples, body.username or None)
+        final_messages = inject_few_shot_into_conversation(session.messages, fs_messages)
+
+    slot = session_store.slot_for(body.session_id)
+    text = await call_backend_with_retry(
+        http_client, backend, final_messages, slot,
+        _sampling_params(), LLM_MAX_RETRIES, log=log,
+    )
+
+    session_store.append_assistant_message(body.session_id, text)
+    removed = session_store.cleanup_stale()
+    if removed:
+        log.info("cleaned up %d stale session(s)", removed)
+
+    log.info(
+        "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
+        label, conf, valence, arousal, backend, body.text[:80],
+    )
+
+    return RespondResult(
+        text=text, label=label, backend=backend, valence=valence, arousal=arousal,
+    )
+
+
+@app.post("/v1/reset")
+async def reset_session(session_id: str | None = None):
+    if session_store:
+        session_store.reset(session_id)
+    return {"status": "ok", "session_id": session_id or "all"}
+
+
 class ClassifyQuery(BaseModel):
     text: str = Field(..., min_length=1, max_length=2048)
 
@@ -210,6 +336,9 @@ async def health():
         "model": "BAAI/bge-small-en-v1.5",
         "krystal_generic": KRYSTAL_GENERIC_URL,
         "krystal_semantic": KRYSTAL_SEMANTIC_URL,
+        "few_shot_enabled": FEW_SHOT_ENABLED,
+        "few_shot_examples": len(few_shot_examples),
+        "active_sessions": len(session_store._sessions) if session_store else 0,
     }
 
 
