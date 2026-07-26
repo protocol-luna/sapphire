@@ -126,9 +126,9 @@ Up to 5 example exchanges from `few_shot_examples.yml` are injected after the sy
 
 Regex-based detection of empty, too-short, or character-repetitive outputs. In **non-streaming** mode, Sapphire retries up to `LLM_MAX_RETRIES` (default: 2) times. In **streaming** mode, degenerate output is discarded after buffering — the client never receives it.
 
-### Single-Backend Mode
+### Backend Routing
 
-Both FUTILE and INTERESSANT routes forward to the same Krystal instance (`http://127.0.0.1:3124`). Configurable via `KRYSTAL_GENERIC_URL` and `KRYSTAL_SEMANTIC_URL` environment variables.
+FUTILE messages route to `KRYSTAL_GENERIC_URL` and INTERESSANT messages route to `KRYSTAL_SEMANTIC_URL`. By default these point to different ports (`:3124` / `:3125`) — set both to the same URL to run a single backend.
 
 ### System Prompt
 
@@ -145,7 +145,7 @@ Key environment variables:
 |----------|---------|-------------|
 | `SAPPHIRE_PORT` | 3123 | HTTP port |
 | `KRYSTAL_GENERIC_URL` | `http://127.0.0.1:3124` | Backend for FUTILE messages |
-| `KRYSTAL_SEMANTIC_URL` | `http://127.0.0.1:3124` | Backend for INTERESSANT messages |
+| `KRYSTAL_SEMANTIC_URL` | `http://127.0.0.1:3125` | Backend for INTERESSANT messages |
 | `SAPPHIRE_BOT_NAME` | "Luna" | Bot persona name |
 | `SAPPHIRE_EMOTION_DEADZONE` | 0.005 | Emotion update threshold |
 | `SAPPHIRE_EMOTION_DECAY` | 0.85 | Emotion decay factor |
