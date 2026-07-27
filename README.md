@@ -83,14 +83,14 @@ The stream contains:
 2. A final `data: {json}` line with complete metadata (includes debug fields when `debug: true`)
 3. A `data: [DONE]` terminator
 
-If the output is degenerate, the stream stops early — no metadata, just `data: [DONE]`. The session is not updated with degenerate content.
+If the output is degenerate, the stream stops early -- no metadata, just `data: [DONE]`. The session is not updated with degenerate content.
 
 ### Other endpoints
 
-- **POST `/v1/reset`** — Reset a session (or all sessions)
-- **POST `/classify`** — Classify text without generating a response
-- **GET `/emotion/{conv_key}`** — Current emotional state for a conversation
-- **GET `/health`** — Health check with system status
+- **POST `/v1/reset`** -- Reset a session (or all sessions)
+- **POST `/classify`** -- Classify text without generating a response
+- **GET `/emotion/{conv_key}`** -- Current emotional state for a conversation
+- **GET `/health`** -- Health check with system status
 
 ## Features
 
@@ -106,17 +106,17 @@ Centroids are computed from `examples_emotion.yml` (83 positive, 79 negative, 85
 
 When calling Krystal, Sapphire dynamically adjusts sampling parameters:
 
-- **Temperature**: `clamp(0.7 + arousal * 0.3, 0.4, 1.0)` — higher arousal = more randomness
-- **Repeat penalty**: `clamp(1.15 - valence * 0.1, 1.0, 1.3)` — higher valence = less penalty
-- **Mirostat entropy**: `clamp(6.0 + arousal * 2.0, 3.0, 8.0)` — higher arousal = more entropy
-- **Emotion deadzone**: 0.005 — per-message scores below this threshold don't update the running state
+- **Temperature**: `clamp(0.7 + arousal * 0.3, 0.4, 1.0)` -- higher arousal = more randomness
+- **Repeat penalty**: `clamp(1.15 - valence * 0.1, 1.0, 1.3)` -- higher valence = less penalty
+- **Mirostat entropy**: `clamp(6.0 + arousal * 2.0, 3.0, 8.0)` -- higher arousal = more entropy
+- **Emotion deadzone**: 0.005 -- per-message scores below this threshold don't update the running state
 
 ### Session Management
 
 Per-channel/user conversation history with configurable parameters:
-- `LLM_MAX_HISTORY` (default: 20) — max messages kept
-- `LLM_SESSION_TTL` (default: 600s) — session expiry
-- `LLM_N_SLOTS` (default: 1) — concurrent slots
+- `LLM_MAX_HISTORY` (default: 20) -- max messages kept
+- `LLM_SESSION_TTL` (default: 600s) -- session expiry
+- `LLM_N_SLOTS` (default: 1) -- concurrent slots
 
 ### Few-Shot Learning
 
@@ -124,11 +124,11 @@ Up to 5 example exchanges from `few_shot_examples.yml` are injected after the sy
 
 ### Degenerate Response Detection
 
-Regex-based detection of empty, too-short, or character-repetitive outputs. In **non-streaming** mode, Sapphire retries up to `LLM_MAX_RETRIES` (default: 2) times. In **streaming** mode, degenerate output is discarded after buffering — the client never receives it.
+Regex-based detection of empty, too-short, or character-repetitive outputs. In **non-streaming** mode, Sapphire retries up to `LLM_MAX_RETRIES` (default: 2) times. In **streaming** mode, degenerate output is discarded after buffering -- the client never receives it.
 
 ### Backend Routing
 
-FUTILE messages route to `KRYSTAL_GENERIC_URL` and INTERESSANT messages route to `KRYSTAL_SEMANTIC_URL`. By default these point to different ports (`:3124` / `:3125`) — set both to the same URL to run a single backend.
+FUTILE messages route to `KRYSTAL_GENERIC_URL` and INTERESSANT messages route to `KRYSTAL_SEMANTIC_URL`. By default these point to different ports (`:3124` / `:3125`) -- set both to the same URL to run a single backend.
 
 ### System Prompt
 

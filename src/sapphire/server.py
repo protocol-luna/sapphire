@@ -169,7 +169,7 @@ async def lifespan(_app: FastAPI):
     )
 
     log.info(
-        "ready — FUTILE -> %s | INTERESSANT -> %s",
+        "ready -- FUTILE -> %s | INTERESSANT -> %s",
         KRYSTAL_GENERIC_URL,
         KRYSTAL_SEMANTIC_URL,
     )
@@ -205,7 +205,7 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
     last_user_text = user_msgs[-1].get("content", "")
 
     # Un seul appel embedder, réutilisé pour le routing FUTILE/INTERESSANT
-    # et pour le scoring émotionnel — zéro latence supplémentaire.
+    # et pour le scoring émotionnel -- zéro latence supplémentaire.
     emb = next(embedder.query_embed(last_user_text)) if last_user_text.strip() else None
 
     label, conf, sim_f, sim_i = classify(
@@ -490,7 +490,7 @@ async def get_emotion(conv_key: str):
     """État émotionnel courant (valence/arousal) d'une conversation.
 
     À appeler depuis Jade après chaque réponse générée, pour ajuster délai,
-    burst mode, longueur de réponse, typo rate, etc. — voir la state machine
+    burst mode, longueur de réponse, typo rate, etc. -- voir la state machine
     comportementale existante (topic fatigue, sleep cycles).
     """
     return emotion_state.get(conv_key)

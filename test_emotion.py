@@ -1,5 +1,5 @@
 """
-Test Sapphire emotion scoring — valence (positive/negative) and arousal (high/low).
+Test Sapphire emotion scoring -- valence (positive/negative) and arousal (high/low).
 
 Checks that /classify returns meaningful, directionally-correct emotion scores.
 """

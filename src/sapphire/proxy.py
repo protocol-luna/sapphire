@@ -1,5 +1,5 @@
 """
-Sapphire proxy — routes requests to Krystal backends.
+Sapphire proxy -- routes requests to Krystal backends.
 
 Supports both streaming (SSE) and non-streaming responses.
 """

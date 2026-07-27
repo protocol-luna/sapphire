@@ -144,7 +144,7 @@ def test_isolation(embedder, centroids, decay: float, deadzone: float):
     print(f"  conv_B (calme)  -> v={b_state['valence']:+.3f} a={b_state['arousal']:+.3f}")
 
     ok = a_state["valence"] != b_state["valence"] and a_state != b_state
-    print(f"  [isolation] {'OK' if ok else 'MISS — les deux états sont identiques'}")
+    print(f"  [isolation] {'OK' if ok else 'MISS -- les deux états sont identiques'}")
     return ok
 
 
@@ -170,7 +170,7 @@ def main():
     if total_ok < len(results):
         print(
             "Si un scénario échoue : vérifier d'abord test_emotion.py (séparation\n"
-            "des pôles au niveau message) avant de suspecter le decay ou l'état —\n"
+            "des pôles au niveau message) avant de suspecter le decay ou l'état --\n"
             "un mauvais centroïde produit un signal bruité que le lissage ne peut\n"
             "pas corriger."
         )

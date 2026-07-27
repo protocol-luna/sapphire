@@ -1,5 +1,5 @@
 """
-Sapphire classifier — embedding centroid similarity.
+Sapphire classifier -- embedding centroid similarity.
 
 Computes cosine similarity between a query and two pre-computed centroids
 (futile / interessant) derived from curated examples.
@@ -97,5 +97,5 @@ def classify(
 
 
 def get_default_examples_path() -> str:
-    """Path to examples.yml — walks up from src/sapphire/ to repo root."""
+    """Path to examples.yml -- walks up from src/sapphire/ to repo root."""
     return str(Path(__file__).resolve().parent.parent.parent / "examples.yml")

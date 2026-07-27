@@ -1,12 +1,12 @@
 """
-Sapphire emotion axes — continuous valence/arousal via embedding centroids.
+Sapphire emotion axes -- continuous valence/arousal via embedding centroids.
 
 Same mechanism as classifier.py (centroid + cosine similarity), but instead
 of a discrete label, each axis returns a continuous score in [-1, 1]:
 signed difference of cosine similarity to the two poles of the axis.
 
 No new embedding call needed at request time if you reuse the same
-embedding computed for the FUTILE/INTERESSANT classification — see
+embedding computed for the FUTILE/INTERESSANT classification -- see
 server.py's chat_completions handler, where `emb` is computed once and
 passed to both classify() and score_axes().
 """
@@ -104,17 +104,17 @@ def score_axes(
 
 
 def get_default_emotion_examples_path() -> str:
-    """Path to examples_emotion.yml — walks up from src/sapphire/ to repo root."""
+    """Path to examples_emotion.yml -- walks up from src/sapphire/ to repo root."""
     return str(Path(__file__).resolve().parent.parent.parent / "examples_emotion.yml")
 
 
 class EmotionState:
     """
     Per-conversation exponential moving average of (valence, arousal),
-    decaying toward 0 on every update — same idea as Jade's topic fatigue.
+    decaying toward 0 on every update -- same idea as Jade's topic fatigue.
 
     NOTE: this decays toward the *recent average raw signal*, not literally
-    toward 0 — if incoming messages carry a persistent weak signal (e.g.
+    toward 0 -- if incoming messages carry a persistent weak signal (e.g.
     casual affirmations reading as mildly positive), the state will settle
     near that value, not at 0. `deadzone` exists to zero out signal too weak
     to be meaningful, so genuinely flat conversation does pull the state
