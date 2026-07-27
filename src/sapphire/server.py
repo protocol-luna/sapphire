@@ -20,6 +20,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import numpy as np
+import yaml
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastembed import TextEmbedding
@@ -62,47 +63,41 @@ logging.basicConfig(
 )
 log = logging.getLogger("sapphire")
 
-PORT = int(os.environ.get("SAPPHIRE_PORT", "3123"))
-KRYSTAL_GENERIC_URL = os.environ.get(
-    "KRYSTAL_GENERIC_URL", "http://127.0.0.1:3124"
-)
-KRYSTAL_SEMANTIC_URL = os.environ.get(
-    "KRYSTAL_SEMANTIC_URL", "http://127.0.0.1:3125"
-)
-EXAMPLES_PATH = os.environ.get(
-    "SAPPHIRE_EXAMPLES",
-    get_default_examples_path(),
-)
-EMOTION_EXAMPLES_PATH = os.environ.get(
-    "SAPPHIRE_EMOTION_EXAMPLES",
-    get_default_emotion_examples_path(),
-)
-EMOTION_DECAY = float(os.environ.get("SAPPHIRE_EMOTION_DECAY", "0.85"))
-EMOTION_DEADZONE = float(os.environ.get("SAPPHIRE_EMOTION_DEADZONE", "0.005"))
+_config_path = Path(__file__).resolve().parent.parent.parent / "config.yml"
+with open(_config_path) as _f:
+    _cfg = yaml.safe_load(_f)
 
-BOT_NAME = os.environ.get("SAPPHIRE_BOT_NAME", "Luna")
+PORT = int(_cfg.get("port", 3123))
+KRYSTAL_GENERIC_URL = str(_cfg.get("krystal_generic_url", "http://127.0.0.1:3124"))
+KRYSTAL_SEMANTIC_URL = str(_cfg.get("krystal_semantic_url", "http://127.0.0.1:3124"))
+EXAMPLES_PATH = str(_cfg.get("examples_path", get_default_examples_path()))
+EMOTION_EXAMPLES_PATH = str(_cfg.get("emotion_examples_path", get_default_emotion_examples_path()))
+EMOTION_DECAY = float(_cfg.get("emotion_decay", 0.85))
+EMOTION_DEADZONE = float(_cfg.get("emotion_deadzone", 0.005))
 
-SYSTEM_PROMPT = os.environ.get(
-    "SAPPHIRE_SYSTEM_PROMPT",
+BOT_NAME = str(_cfg.get("bot_name", "Luna"))
+
+SYSTEM_PROMPT = str(_cfg.get(
+    "system_prompt",
     f"Your name is {BOT_NAME}. You are a playful 21-year-old girl. "
     "Keep responses short and casual like a normal Discord user. "
     "Never repeat or echo the user's message back to them. "
     "Never say 'I understand' or 'I see'. Just answer naturally.",
-)
-FEW_SHOT_ENABLED = os.environ.get("SAPPHIRE_FEW_SHOT_ENABLED", "true").lower() == "true"
-FEW_SHOT_EXAMPLES_PATH = os.environ.get(
-    "SAPPHIRE_FEW_SHOT_EXAMPLES",
+))
+FEW_SHOT_ENABLED = bool(_cfg.get("few_shot_enabled", True))
+FEW_SHOT_EXAMPLES_PATH = str(_cfg.get(
+    "few_shot_examples_path",
     str(Path(__file__).resolve().parent.parent.parent / "few_shot_examples.yml"),
-)
-LLM_N_SLOTS = int(os.environ.get("SAPPHIRE_LLM_N_SLOTS", "1"))
-LLM_SESSION_TTL = float(os.environ.get("SAPPHIRE_LLM_SESSION_TTL", "600"))
-LLM_MAX_HISTORY = int(os.environ.get("SAPPHIRE_LLM_MAX_HISTORY", "20"))
-LLM_MAX_RETRIES = int(os.environ.get("SAPPHIRE_LLM_MAX_RETRIES", "2"))
+))
+LLM_N_SLOTS = int(_cfg.get("llm_n_slots", 1))
+LLM_SESSION_TTL = float(_cfg.get("llm_session_ttl", 600))
+LLM_MAX_HISTORY = int(_cfg.get("llm_max_history", 20))
+LLM_MAX_RETRIES = int(_cfg.get("llm_max_retries", 2))
 
-MIROSTAT_ENABLED = os.environ.get("SAPPHIRE_MIROSTAT_ENABLED", "true").lower() == "true"
-MIROSTAT_MODE = int(os.environ.get("SAPPHIRE_MIROSTAT_MODE", "2"))
-MIROSTAT_LR = float(os.environ.get("SAPPHIRE_MIROSTAT_LR", "0.1"))
-MIROSTAT_ENT = float(os.environ.get("SAPPHIRE_MIROSTAT_ENT", "5.0"))
+MIROSTAT_ENABLED = bool(_cfg.get("mirostat_enabled", True))
+MIROSTAT_MODE = int(_cfg.get("mirostat_mode", 2))
+MIROSTAT_LR = float(_cfg.get("mirostat_lr", 0.1))
+MIROSTAT_ENT = float(_cfg.get("mirostat_ent", 5.0))
 
 few_shot_examples: list[dict[str, str]] = []
 session_store: SessionStore | None = None

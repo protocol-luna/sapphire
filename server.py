@@ -1,11 +1,11 @@
 import argparse
 import logging
-import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
 
+import yaml
 import uvicorn
 
 logging.basicConfig(
@@ -14,6 +14,10 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("sapphire")
+
+_config_path = Path(__file__).resolve().parent / "config.yml"
+with open(_config_path) as _f:
+    _cfg = yaml.safe_load(_f)
 
 
 def build_centroids():
@@ -31,8 +35,8 @@ def build_centroids():
         get_default_emotion_examples_path,
     )
 
-    examples_path = os.environ.get("SAPPHIRE_EXAMPLES", get_default_examples_path())
-    emotion_path = os.environ.get("SAPPHIRE_EMOTION_EXAMPLES", get_default_emotion_examples_path())
+    examples_path = str(_cfg.get("examples_path", get_default_examples_path()))
+    emotion_path = str(_cfg.get("emotion_examples_path", get_default_emotion_examples_path()))
 
     log.info("loading embedding model BAAI/bge-small-en-v1.5...")
     embedder = TextEmbedding(model_name="BAAI/bge-small-en-v1.5", max_length=128)
@@ -72,5 +76,5 @@ if __name__ == "__main__":
         build_centroids()
         sys.exit(0)
 
-    port = int(os.environ.get("SAPPHIRE_PORT", "3123"))
+    port = int(_cfg.get("port", 3123))
     uvicorn.run("sapphire.server:app", host="127.0.0.1", port=port, log_level="info")
