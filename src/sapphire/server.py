@@ -261,6 +261,18 @@ class RespondResult(BaseModel):
     debug_classification_confidence: float | None = None
 
 
+import re
+
+_USER_LEAK_RE = re.compile(r"\nUser\s*:")
+
+
+def truncate_user_leak(text: str) -> str:
+    m = _USER_LEAK_RE.search(text)
+    if m:
+        text = text[:m.start()]
+    return text.strip()
+
+
 def _sampling_params(valence: float = 0, arousal: float = 0) -> dict:
     temp = max(0.4, min(1.0, 0.7 + arousal * 0.3))
     penalty = max(1.0, min(1.3, 1.15 - valence * 0.1))
@@ -317,6 +329,7 @@ async def respond(body: RespondRequest, request: Request):
         )
         elapsed = time.monotonic() - t0
 
+        text = truncate_user_leak(text)
         session_store.append_assistant_message(body.session_id, text)
         removed = session_store.cleanup_stale()
         if removed:
@@ -388,6 +401,7 @@ async def respond(body: RespondRequest, request: Request):
                     yield f"data: {payload}\n\n"
 
         text = "".join(full_text)
+        text = truncate_user_leak(text)
         if is_degenerate_output(text):
             log.warning("degenerate output discarded from stream: %r", text[:80])
             yield "data: [DONE]\n\n"
