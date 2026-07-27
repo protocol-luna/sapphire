@@ -8,8 +8,8 @@ from pathlib import Path
 from sklearn.decomposition import PCA
 from fastembed import TextEmbedding
 
-CENTROID_DIR = Path(__file__).resolve().parent / "centroids"
-EXAMPLES_PATH = Path(__file__).resolve().parent / "examples.yml"
+CENTROID_DIR = Path(__file__).resolve().parent / ".." / "centroids"
+EXAMPLES_PATH = Path(__file__).resolve().parent / ".." / "examples.yml"
 
 
 def expand(items: list) -> list[str]:

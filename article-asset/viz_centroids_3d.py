@@ -10,8 +10,8 @@ from sklearn.decomposition import PCA
 from fastembed import TextEmbedding
 import plotly.graph_objects as go
 
-CENTROID_DIR = Path(__file__).resolve().parent / "centroids"
-EXAMPLES_PATH = Path(__file__).resolve().parent / "examples.yml"
+CENTROID_DIR = Path(__file__).resolve().parent / ".." / "centroids"
+EXAMPLES_PATH = Path(__file__).resolve().parent / ".." / "examples.yml"
 COLORS = {"futile": "#4C72B0", "interessant": "#EDB232"}
 CENTROID_COLORS = {"futile": "#1A3A6B", "interessant": "#B87D1A"}
 
