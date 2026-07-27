@@ -27,9 +27,9 @@
 Sapphire sits between Emerald (the brain) and Krystal (llama.cpp), handling session management, few-shot example injection, emotion classification, degenerate response detection, and prompt construction.
 
 ```mermaid
-graph LR
-    Emerald["Emerald<br/>Brain"] -- "HTTP :3123" --> Sapphire["Sapphire<br/><strong>LLM Gateway</strong>"]
-    Sapphire -- "HTTP :3124" --> Krystal["Krystal<br/>llama.cpp"]
+flowchart LR
+    Emerald["Emerald (Brain)"] -- ":3123" --> Sapphire["Sapphire (LLM Gateway)"]
+    Sapphire -- ":3124" --> Krystal["Krystal (llama.cpp)"]
 ```
 
 ## How It Works
