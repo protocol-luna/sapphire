@@ -32,7 +32,7 @@ def load_examples(path: str) -> tuple[list[str], list[str]]:
 
 def _kmeans(data: np.ndarray, k: int, max_iters: int = 20) -> np.ndarray:
     """Simple k-means clustering. Returns (k, dim) centroids."""
-    n, dim = data.shape
+    n, _dim = data.shape
     k = min(k, n)
     rng = np.random.default_rng(42)
     idx = rng.choice(n, k, replace=False)
@@ -123,7 +123,11 @@ def classify(
     """
     if embedder is None or futile_centroid is None or interessant_centroid is None:
         return "FUTILE", 0.0, 0.0, 0.0
-    emb = precomputed_emb if precomputed_emb is not None else next(embedder.query_embed(text))
+    emb = (
+        precomputed_emb
+        if precomputed_emb is not None
+        else next(embedder.query_embed(text))
+    )
     norm = np.linalg.norm(emb)
     if norm == 0:
         return "FUTILE", 0.0, 0.0, 0.0

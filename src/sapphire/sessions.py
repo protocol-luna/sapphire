@@ -2,7 +2,7 @@ import time
 
 
 class Session:
-    __slots__ = ("messages", "last_used")
+    __slots__ = ("last_used", "messages")
 
     def __init__(self, system_prompt: str):
         self.messages: list[dict[str, str]] = [
@@ -12,7 +12,9 @@ class Session:
 
 
 class SessionStore:
-    def __init__(self, system_prompt: str, ttl_seconds: float, n_slots: int, max_history: int):
+    def __init__(
+        self, system_prompt: str, ttl_seconds: float, n_slots: int, max_history: int
+    ):
         self.system_prompt = system_prompt
         self.ttl_seconds = ttl_seconds
         self.n_slots = n_slots
@@ -43,7 +45,10 @@ class SessionStore:
     def _trim(self, session: Session) -> None:
         exchanges = session.messages[1:]
         if len(exchanges) > self.max_history * 2:
-            session.messages = [session.messages[0], *exchanges[-self.max_history * 2:]]
+            session.messages = [
+                session.messages[0],
+                *exchanges[-self.max_history * 2 :],
+            ]
 
     def slot_for(self, session_id: str) -> int:
         h = 0
@@ -56,7 +61,8 @@ class SessionStore:
     def cleanup_stale(self) -> int:
         now = time.time()
         stale = [
-            sid for sid, s in self._sessions.items()
+            sid
+            for sid, s in self._sessions.items()
             if now - s.last_used > self.ttl_seconds
         ]
         for sid in stale:

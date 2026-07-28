@@ -132,7 +132,9 @@ class EmotionState:
         self.deadzone = deadzone
         self._state: dict[str, dict[str, float]] = {}
 
-    def update(self, key: str, valence_delta: float, arousal_delta: float) -> dict[str, float]:
+    def update(
+        self, key: str, valence_delta: float, arousal_delta: float
+    ) -> dict[str, float]:
         if abs(valence_delta) < self.deadzone:
             valence_delta = 0.0
         if abs(arousal_delta) < self.deadzone:

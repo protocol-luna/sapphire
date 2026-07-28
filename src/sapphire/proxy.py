@@ -4,9 +4,9 @@ Sapphire proxy -- routes requests to Krystal backends.
 Supports both streaming (SSE) and non-streaming responses.
 """
 
+import httpx
 from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
-import httpx
 
 
 async def proxy_single(
@@ -92,14 +92,22 @@ async def call_backend_with_retry(
     last_usage: dict = {}
     for attempt in range(max_retries + 1):
         last_response, last_usage = await call_backend_once(
-            client, backend, messages, slot, sampling_params, max_tokens,
+            client,
+            backend,
+            messages,
+            slot,
+            sampling_params,
+            max_tokens,
         )
         from sapphire.degenerate import is_degenerate_output
+
         if not is_degenerate_output(last_response):
             return last_response, last_usage
         if log:
             log.warning(
                 "degenerate output detected (attempt %d/%d): %r",
-                attempt + 1, max_retries + 1, last_response,
+                attempt + 1,
+                max_retries + 1,
+                last_response,
             )
     return last_response, last_usage

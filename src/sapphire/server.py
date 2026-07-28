@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 sapphire -- LLM gateway / middleware.
 
@@ -14,47 +13,46 @@ Usage:
 
 import json
 import logging
-import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import httpx
 import numpy as np
+import uvicorn
 import yaml
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from fastembed import TextEmbedding
 from pydantic import BaseModel, Field
-import httpx
-import uvicorn
 
 from sapphire.classifier import (
-    load_examples,
-    compute_centroids,
-    classify,
-    get_default_examples_path,
-    save_centroids,
-    load_centroids,
     centroid_path,
+    classify,
+    compute_centroids,
+    get_default_examples_path,
+    load_centroids,
+    load_examples,
+    save_centroids,
 )
+from sapphire.degenerate import is_degenerate_output
 from sapphire.emotion import (
-    load_emotion_examples,
-    compute_emotion_centroids,
-    score_axes,
-    get_default_emotion_examples_path,
     EmotionState,
-    save_emotion_centroids,
-    load_emotion_centroids,
+    compute_emotion_centroids,
     emotion_centroid_path,
+    get_default_emotion_examples_path,
+    load_emotion_centroids,
+    load_emotion_examples,
+    save_emotion_centroids,
+    score_axes,
 )
 from sapphire.few_shot import (
-    load_few_shot_examples,
     format_few_shot_examples,
     inject_few_shot_into_conversation,
+    load_few_shot_examples,
 )
+from sapphire.proxy import call_backend_with_retry, proxy_single, proxy_stream
 from sapphire.sessions import SessionStore
-from sapphire.degenerate import is_degenerate_output
-from sapphire.proxy import proxy_single, proxy_stream, call_backend_with_retry
 
 logging.basicConfig(
     level=logging.INFO,
@@ -71,24 +69,30 @@ PORT = int(_cfg.get("port", 3123))
 KRYSTAL_GENERIC_URL = str(_cfg.get("krystal_generic_url", "http://127.0.0.1:3124"))
 KRYSTAL_SEMANTIC_URL = str(_cfg.get("krystal_semantic_url", "http://127.0.0.1:3124"))
 EXAMPLES_PATH = str(_cfg.get("examples_path", get_default_examples_path()))
-EMOTION_EXAMPLES_PATH = str(_cfg.get("emotion_examples_path", get_default_emotion_examples_path()))
+EMOTION_EXAMPLES_PATH = str(
+    _cfg.get("emotion_examples_path", get_default_emotion_examples_path())
+)
 EMOTION_DECAY = float(_cfg.get("emotion_decay", 0.85))
 EMOTION_DEADZONE = float(_cfg.get("emotion_deadzone", 0.005))
 
 BOT_NAME = str(_cfg.get("bot_name", "Luna"))
 
-SYSTEM_PROMPT = str(_cfg.get(
-    "system_prompt",
-    f"Your name is {BOT_NAME}. You are a playful 21-year-old girl. "
-    "Keep responses short and casual like a normal Discord user. "
-    "Never repeat or echo the user's message back to them. "
-    "Never say 'I understand' or 'I see'. Just answer naturally.",
-))
+SYSTEM_PROMPT = str(
+    _cfg.get(
+        "system_prompt",
+        f"Your name is {BOT_NAME}. You are a playful 21-year-old girl. "
+        "Keep responses short and casual like a normal Discord user. "
+        "Never repeat or echo the user's message back to them. "
+        "Never say 'I understand' or 'I see'. Just answer naturally.",
+    )
+)
 FEW_SHOT_ENABLED = bool(_cfg.get("few_shot_enabled", True))
-FEW_SHOT_EXAMPLES_PATH = str(_cfg.get(
-    "few_shot_examples_path",
-    str(Path(__file__).resolve().parent.parent.parent / "few_shot_examples.yml"),
-))
+FEW_SHOT_EXAMPLES_PATH = str(
+    _cfg.get(
+        "few_shot_examples_path",
+        str(Path(__file__).resolve().parent.parent.parent / "few_shot_examples.yml"),
+    )
+)
 LLM_N_SLOTS = int(_cfg.get("llm_n_slots", 1))
 LLM_SESSION_TTL = float(_cfg.get("llm_session_ttl", 600))
 LLM_MAX_HISTORY = int(_cfg.get("llm_max_history", 20))
@@ -112,7 +116,12 @@ http_client: httpx.AsyncClient | None = None
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    global embedder, futile_centroid, interessant_centroid, emotion_centroids, http_client
+    global \
+        embedder, \
+        futile_centroid, \
+        interessant_centroid, \
+        emotion_centroids, \
+        http_client
     global few_shot_examples, session_store
 
     log.info("loading embedding model BAAI/bge-small-en-v1.5...")
@@ -125,17 +134,29 @@ async def lifespan(_app: FastAPI):
     futile_centroid, interessant_centroid = load_centroids()
     emotion_centroids = load_emotion_centroids()
 
-    if futile_centroid is not None and interessant_centroid is not None and emotion_centroids is not None:
-        log.info("loaded prebuilt centroids from %s/", centroid_path().rsplit("/", 1)[0])
+    if (
+        futile_centroid is not None
+        and interessant_centroid is not None
+        and emotion_centroids is not None
+    ):
+        log.info(
+            "loaded prebuilt centroids from %s/", centroid_path().rsplit("/", 1)[0]
+        )
     else:
         log.info("prebuilt centroids not found, computing from examples...")
         log.info("loading examples from %s", EXAMPLES_PATH)
         futile_examples, interessant_examples = load_examples(EXAMPLES_PATH)
-        log.info("  %d futile, %d interessant examples", len(futile_examples), len(interessant_examples))
+        log.info(
+            "  %d futile, %d interessant examples",
+            len(futile_examples),
+            len(interessant_examples),
+        )
 
         log.info("computing classification centroids...")
         futile_centroid, interessant_centroid = compute_centroids(
-            embedder, futile_examples, interessant_examples,
+            embedder,
+            futile_examples,
+            interessant_examples,
         )
         save_centroids(futile_centroid, interessant_centroid)
         log.info("  saved to %s", centroid_path())
@@ -150,7 +171,9 @@ async def lifespan(_app: FastAPI):
 
     log.info("loading few-shot examples from %s", FEW_SHOT_EXAMPLES_PATH)
     few_shot_examples = load_few_shot_examples(FEW_SHOT_EXAMPLES_PATH)
-    log.info("  %d few-shot examples (enabled=%s)", len(few_shot_examples), FEW_SHOT_ENABLED)
+    log.info(
+        "  %d few-shot examples (enabled=%s)", len(few_shot_examples), FEW_SHOT_ENABLED
+    )
 
     session_store = SessionStore(
         system_prompt=SYSTEM_PROMPT,
@@ -204,7 +227,10 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
     emb = next(embedder.query_embed(last_user_text)) if last_user_text.strip() else None
 
     label, conf, sim_f, sim_i = classify(
-        last_user_text, embedder, futile_centroid, interessant_centroid,
+        last_user_text,
+        embedder,
+        futile_centroid,
+        interessant_centroid,
         precomputed_emb=emb,
     )
 
@@ -218,8 +244,16 @@ async def chat_completions(body: ChatCompletionRequest, request: Request):
     backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
     log.info(
         "%s (Δ=%.3f, f=%.3f i=%.3f) | valence=%.3f arousal=%.3f (state v=%.3f a=%.3f) | %s | %s",
-        label, conf, sim_f, sim_i, valence, arousal,
-        state["valence"], state["arousal"], backend, last_user_text[:80],
+        label,
+        conf,
+        sim_f,
+        sim_i,
+        valence,
+        arousal,
+        state["valence"],
+        state["arousal"],
+        backend,
+        last_user_text[:80],
     )
 
     payload = body.model_dump(exclude={"stream"}, exclude_none=True)
@@ -264,7 +298,7 @@ _USER_LEAK_RE = re.compile(r"\nUser\s*:")
 def truncate_user_leak(text: str) -> str:
     m = _USER_LEAK_RE.search(text)
     if m:
-        text = text[:m.start()]
+        text = text[: m.start()]
     return text.strip()
 
 
@@ -297,8 +331,11 @@ async def respond(body: RespondRequest, request: Request):
 
     emb = next(embedder.query_embed(body.text)) if body.text.strip() else None
 
-    label, conf, sim_f, sim_i = classify(
-        body.text, embedder, futile_centroid, interessant_centroid,
+    label, conf, _sim_f, _sim_i = classify(
+        body.text,
+        embedder,
+        futile_centroid,
+        interessant_centroid,
         precomputed_emb=emb,
     )
     valence, arousal = score_axes(emb, emotion_centroids)
@@ -306,12 +343,16 @@ async def respond(body: RespondRequest, request: Request):
 
     backend = KRYSTAL_GENERIC_URL if label == "FUTILE" else KRYSTAL_SEMANTIC_URL
 
-    session = session_store.append_user_message(body.session_id, body.username, body.text)
+    session = session_store.append_user_message(
+        body.session_id, body.username, body.text
+    )
 
     final_messages = session.messages
     if FEW_SHOT_ENABLED and few_shot_examples:
         fs_messages = format_few_shot_examples(few_shot_examples, body.username or None)
-        final_messages = inject_few_shot_into_conversation(session.messages, fs_messages)
+        final_messages = inject_few_shot_into_conversation(
+            session.messages, fs_messages
+        )
 
     slot = session_store.slot_for(body.session_id)
     params = _sampling_params(valence, arousal)
@@ -319,8 +360,13 @@ async def respond(body: RespondRequest, request: Request):
     if not body.stream:
         t0 = time.monotonic()
         text, usage = await call_backend_with_retry(
-            http_client, backend, final_messages, slot,
-            params, LLM_MAX_RETRIES, log=log,
+            http_client,
+            backend,
+            final_messages,
+            slot,
+            params,
+            LLM_MAX_RETRIES,
+            log=log,
         )
         elapsed = time.monotonic() - t0
 
@@ -334,7 +380,12 @@ async def respond(body: RespondRequest, request: Request):
 
         log.info(
             "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
-            label, conf, valence, arousal, backend, body.text[:80],
+            label,
+            conf,
+            valence,
+            arousal,
+            backend,
+            body.text[:80],
         )
 
         if body.debug:
@@ -342,8 +393,11 @@ async def respond(body: RespondRequest, request: Request):
             ct = usage.get("completion_tokens")
             tps = round(ct / elapsed, 1) if ct and elapsed > 0 else None
             return RespondResult(
-                text=text, label=label, backend=backend,
-                valence=valence, arousal=arousal,
+                text=text,
+                label=label,
+                backend=backend,
+                valence=valence,
+                arousal=arousal,
                 debug_prompt_tokens=pt,
                 debug_completion_tokens=ct,
                 debug_time_ms=round(elapsed * 1000),
@@ -354,7 +408,11 @@ async def respond(body: RespondRequest, request: Request):
             )
 
         return RespondResult(
-            text=text, label=label, backend=backend, valence=valence, arousal=arousal,
+            text=text,
+            label=label,
+            backend=backend,
+            valence=valence,
+            arousal=arousal,
         )
 
     # --- Streaming mode ---
@@ -388,7 +446,9 @@ async def respond(body: RespondRequest, request: Request):
                     break
                 try:
                     data = json.loads(payload)
-                    delta = data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    delta = (
+                        data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    )
                     if delta:
                         full_text.append(delta)
                         yield f"data: {delta}\n\n"
@@ -412,29 +472,40 @@ async def respond(body: RespondRequest, request: Request):
 
         log.info(
             "%s (Δ=%.3f) | valence=%.3f arousal=%.3f | %s | %s",
-            label, conf, valence, arousal, backend, body.text[:80],
+            label,
+            conf,
+            valence,
+            arousal,
+            backend,
+            body.text[:80],
         )
 
-        meta = {
-            "text": text,
-            "label": label,
-            "backend": backend,
-            "valence": valence,
-            "arousal": arousal,
-            "prompt_tokens": 0,
-            "completion_tokens": len(text.split()),
-            "time_ms": round(elapsed * 1000),
-            "tokens_per_second": round(len(text.split()) / elapsed, 1) if elapsed > 0 else 0,
-            "emotion_state_valence": round(emo_state.get("valence", 0), 4),
-            "emotion_state_arousal": round(emo_state.get("arousal", 0), 4),
-            "classification_confidence": round(conf, 4),
-        } if body.debug else {
-            "text": text,
-            "label": label,
-            "backend": backend,
-            "valence": valence,
-            "arousal": arousal,
-        }
+        meta = (
+            {
+                "text": text,
+                "label": label,
+                "backend": backend,
+                "valence": valence,
+                "arousal": arousal,
+                "prompt_tokens": 0,
+                "completion_tokens": len(text.split()),
+                "time_ms": round(elapsed * 1000),
+                "tokens_per_second": round(len(text.split()) / elapsed, 1)
+                if elapsed > 0
+                else 0,
+                "emotion_state_valence": round(emo_state.get("valence", 0), 4),
+                "emotion_state_arousal": round(emo_state.get("arousal", 0), 4),
+                "classification_confidence": round(conf, 4),
+            }
+            if body.debug
+            else {
+                "text": text,
+                "label": label,
+                "backend": backend,
+                "valence": valence,
+                "arousal": arousal,
+            }
+        )
 
         yield f"data: {json.dumps(meta)}\n\n"
         yield "data: [DONE]\n\n"
@@ -469,14 +540,20 @@ class ClassifyResult(BaseModel):
 @app.post("/classify", response_model=ClassifyResult)
 async def classify_endpoint(query: ClassifyQuery):
     label, conf, sim_f, sim_i = classify(
-        query.text[:2048], embedder, futile_centroid, interessant_centroid,
+        query.text[:2048],
+        embedder,
+        futile_centroid,
+        interessant_centroid,
     )
     emb = next(embedder.query_embed(query.text[:2048]))
     valence, arousal = score_axes(emb, emotion_centroids)
     return ClassifyResult(
-        label=label, confidence=round(conf, 4),
-        sim_futile=round(sim_f, 4), sim_interessant=round(sim_i, 4),
-        valence=round(valence, 4), arousal=round(arousal, 4),
+        label=label,
+        confidence=round(conf, 4),
+        sim_futile=round(sim_f, 4),
+        sim_interessant=round(sim_i, 4),
+        valence=round(valence, 4),
+        arousal=round(arousal, 4),
     )
 
 
