@@ -18,8 +18,6 @@ futile:
 - are you human
 - good bot
 - bad bot
-- text: are you sentient
-  weight: 5
 - can you hear me
 - is this thing on
 - are you alive
@@ -239,7 +237,8 @@ futile:
 - too long didn't read
 - tl;dr
 - tldr
-- i like trains
+- text: i like trains
+  weight: 5
 - have you guys seen that new movie
 - i'm hungry
 - i want food
@@ -708,6 +707,7 @@ interessant:
 - explain dependency injection
 - what's the time complexity of this algorithm
 - how does kubernetes service discovery work
+- are you sentient
 - what is quantum computing
 - can you explain quantum physics
 - how do vaccines actually work

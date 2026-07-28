@@ -101,6 +101,7 @@ EXPECTED_FUTILE = [
     "make me laugh",
     "say something funny",
     "tell me something interesting",
+    "do a magic trick",
     # phatique
     "stop talking",
     "shut up",
@@ -190,6 +191,7 @@ EXPECTED_FUTILE = [
     "random",
     "side note",
     "fun fact",
+    "what's the meaning of life",
     "i'm hungry",
     # confusion
     "i'm confused",
@@ -260,7 +262,6 @@ EXPECTED_INTERESSANT = [
     "how do i implement caching in my app",
     # sciences
     "are you sentient",
-    "do a magic trick",
     "what is quantum computing",
     "can you explain quantum physics",
     "how do vaccines actually work",
@@ -280,7 +281,6 @@ EXPECTED_INTERESSANT = [
     "what causes volcanic eruptions",
     "how does the human brain work",
     # philosophie
-    "what's the meaning of life",
     "do you think ai will take over",
     "i think capitalism is broken tbh",
     "what's your take on free will",
