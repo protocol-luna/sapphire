@@ -1,9 +1,9 @@
 """
-Sapphire emotion axes -- continuous valence/arousal via embedding centroids.
+Sapphire emotion axes -- continuous valence/arousal via multicentroid similarity.
 
-Same mechanism as classifier.py (centroid + cosine similarity), but instead
-of a discrete label, each axis returns a continuous score in [-1, 1]:
-signed difference of cosine similarity to the two poles of the axis.
+Same mechanism as classifier.py (k-means multicentroid + max cosine similarity),
+but instead of a discrete label, each axis returns a continuous score in [-1, 1]:
+signed difference of max cosine similarity to the two poles of the axis.
 
 No new embedding call needed at request time if you reuse the same
 embedding computed for the FUTILE/INTERESSANT classification -- see
@@ -16,6 +16,8 @@ from pathlib import Path
 import numpy as np
 import yaml
 from fastembed import TextEmbedding
+
+from sapphire.classifier import _kmeans, _max_sim
 
 
 def load_emotion_examples(path: str) -> dict[str, list[str]]:
@@ -44,12 +46,16 @@ def load_emotion_examples(path: str) -> dict[str, list[str]]:
 def compute_emotion_centroids(
     embedder: TextEmbedding,
     examples: dict[str, list[str]],
+    k: int = 10,
 ) -> dict[str, np.ndarray]:
-    """Compute one centroid per pole by averaging example embeddings."""
+    """Compute k centroid vectors per pole via k-means."""
     centroids = {}
     for pole, texts in examples.items():
         emb = np.array(list(embedder.passage_embed(texts)))
-        centroids[pole] = emb.mean(axis=0)
+        if len(emb) <= k:
+            centroids[pole] = emb.mean(axis=0, keepdims=True)
+        else:
+            centroids[pole] = _kmeans(emb, k)
     return centroids
 
 
@@ -82,12 +88,12 @@ def emotion_centroid_path() -> str:
 
 
 def _axis_score(emb: np.ndarray, pos: np.ndarray, neg: np.ndarray) -> float:
-    """Signed cosine-similarity difference between the two poles of an axis."""
+    """Max-signed cosine-similarity difference between two multicentroid poles."""
     norm = np.linalg.norm(emb)
     if norm == 0:
         return 0.0
-    sim_pos = float(np.dot(emb, pos) / (norm * np.linalg.norm(pos)))
-    sim_neg = float(np.dot(emb, neg) / (norm * np.linalg.norm(neg)))
+    sim_pos = _max_sim(emb, norm, pos)
+    sim_neg = _max_sim(emb, norm, neg)
     return sim_pos - sim_neg
 
 

@@ -46,20 +46,24 @@ def main():
 
     cent = np.load(CENTROID_DIR / "classifier_centroids.npz")
     f_cent, i_cent = cent["futile"], cent["interessant"]
-
-    all_pts = np.vstack([embeddings, f_cent.reshape(1, -1), i_cent.reshape(1, -1)])
+    # f_cent and i_cent are (k, dim) -- flatten all centroids into PCA
+    all_centroids = np.vstack([f_cent, i_cent])
+    n_f = len(f_cent)
+    all_pts = np.vstack([embeddings, all_centroids])
     pca = PCA(n_components=3)
     proj = pca.fit_transform(all_pts)
-    emb_proj = proj[:-2]
-    cent_proj = proj[-2:]
+    emb_proj = proj[:-len(all_centroids)]
+    cent_proj = proj[-len(all_centroids):]
+    f_cent_proj = cent_proj[:n_f]
+    i_cent_proj = cent_proj[n_f:]
     var = pca.explained_variance_ratio_.sum()
 
     hover_texts = []
     predicted = []
     mis_f_count = mis_i_count = 0
     for i in range(len(all_texts)):
-        sim_f = cos(embeddings[i], f_cent)
-        sim_i = cos(embeddings[i], i_cent)
+        sim_f = float(np.max(f_cent @ embeddings[i] / (np.linalg.norm(embeddings[i]) * np.linalg.norm(f_cent, axis=1))))
+        sim_i = float(np.max(i_cent @ embeddings[i] / (np.linalg.norm(embeddings[i]) * np.linalg.norm(i_cent, axis=1))))
         diff = sim_i - sim_f
         label = "INTERESTING" if diff > 0 else "FUTILE"
         predicted.append("interessant" if diff > 0 else "futile")
@@ -104,18 +108,29 @@ def main():
                 name=f"{group_name}{suffix}",
             ))
 
-    for idx, (color, name) in enumerate([
-        ("#1A3A6B", "Futile centroid"),
-        ("#B87D1A", "Interesting centroid"),
-    ]):
+    for idx in range(len(f_cent_proj)):
+        color = "#1A3A6B" if idx == 0 else "#4A7AB5"
         fig.add_trace(go.Scatter3d(
-            x=[cent_proj[idx, 0]], y=[cent_proj[idx, 1]], z=[cent_proj[idx, 2]],
+            x=[f_cent_proj[idx, 0]], y=[f_cent_proj[idx, 1]], z=[f_cent_proj[idx, 2]],
             mode="markers",
             marker=dict(
-                size=15, color=color, symbol="diamond",
+                size=15 if idx == 0 else 9, color=color, symbol="diamond",
                 line=dict(width=1, color="white"),
             ),
-            name=name, hoverinfo="name",
+            name=f"Futile centroid {idx+1}" if n_f > 1 else "Futile centroid",
+            hoverinfo="name",
+        ))
+    for idx in range(len(i_cent_proj)):
+        color = "#B87D1A" if idx == 0 else "#D4A84B"
+        fig.add_trace(go.Scatter3d(
+            x=[i_cent_proj[idx, 0]], y=[i_cent_proj[idx, 1]], z=[i_cent_proj[idx, 2]],
+            mode="markers",
+            marker=dict(
+                size=15 if idx == 0 else 9, color=color, symbol="diamond",
+                line=dict(width=1, color="white"),
+            ),
+            name=f"Interesting centroid {idx+1}" if len(i_cent_proj) > 1 else "Interesting centroid",
+            hoverinfo="name",
         ))
 
     test_sentences = ["lol", "i feel sad today"]
@@ -124,7 +139,8 @@ def main():
 
     for sent, proj_pt in zip(test_sentences, test_proj):
         emb = test_embs[test_sentences.index(sent)]
-        sim_f, sim_i = cos(emb, f_cent), cos(emb, i_cent)
+        sim_f = float(np.max(f_cent @ emb / (np.linalg.norm(emb) * np.linalg.norm(f_cent, axis=1))))
+        sim_i = float(np.max(i_cent @ emb / (np.linalg.norm(emb) * np.linalg.norm(i_cent, axis=1))))
         diff = sim_i - sim_f
         label = "INTERESTING" if diff > 0 else "FUTILE"
         hover = (
