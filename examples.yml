@@ -18,7 +18,8 @@ futile:
 - are you human
 - good bot
 - bad bot
-- are you sentient
+- text: are you sentient
+  weight: 5
 - can you hear me
 - is this thing on
 - are you alive
@@ -84,6 +85,10 @@ futile:
 - k
 - kk
 - np
+- text: im dying of boredom
+  weight: 5
+- text: i'm indifferent
+  weight: 5
 - text: nvm
   weight: 5
 - nevermind

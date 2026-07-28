@@ -1,8 +1,8 @@
 """
-Sapphire classifier -- embedding centroid similarity.
+Sapphire classifier -- multicentroid k-means similarity.
 
-Computes cosine similarity between a query and two pre-computed centroids
-(futile / interessant) derived from curated examples.
+Computes cosine similarity between a query and k centroids per class (futile /
+interessant). The class score is the maximum similarity across its k centroids.
 """
 
 from pathlib import Path
@@ -30,15 +30,42 @@ def load_examples(path: str) -> tuple[list[str], list[str]]:
     return expand(data.get("futile", [])), expand(data.get("interessant", []))
 
 
+def _kmeans(data: np.ndarray, k: int, max_iters: int = 20) -> np.ndarray:
+    """Simple k-means clustering. Returns (k, dim) centroids."""
+    n, dim = data.shape
+    k = min(k, n)
+    rng = np.random.default_rng(42)
+    idx = rng.choice(n, k, replace=False)
+    centroids = data[idx].copy()
+    for _ in range(max_iters):
+        dists = np.linalg.norm(data[:, None] - centroids[None], axis=2)
+        labels = np.argmin(dists, axis=1)
+        new = np.array([data[labels == i].mean(axis=0) for i in range(k)])
+        new = np.where(np.isnan(new), centroids, new)
+        if np.allclose(centroids, new):
+            break
+        centroids = new
+    return centroids
+
+
 def compute_centroids(
     embedder: TextEmbedding,
     futile: list[str],
     interessant: list[str],
+    k: int = 10,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Compute centroid vectors by averaging all example embeddings."""
+    """Compute k centroid vectors per class via k-means."""
     f_emb = np.array(list(embedder.passage_embed(futile)))
     i_emb = np.array(list(embedder.passage_embed(interessant)))
-    return f_emb.mean(axis=0), i_emb.mean(axis=0)
+    if len(f_emb) <= k:
+        f_cent = f_emb.mean(axis=0, keepdims=True)
+    else:
+        f_cent = _kmeans(f_emb, k)
+    if len(i_emb) <= k:
+        i_cent = i_emb.mean(axis=0, keepdims=True)
+    else:
+        i_cent = _kmeans(i_emb, k)
+    return f_cent, i_cent
 
 
 CENTROID_DIR = Path(__file__).resolve().parent.parent.parent / "centroids"
@@ -70,6 +97,14 @@ def centroid_path() -> str:
     return str(CENTROID_DIR / "classifier_centroids.npz")
 
 
+def _max_sim(emb: np.ndarray, norm: float, centroids: np.ndarray) -> float:
+    """Maximum cosine similarity between `emb` and any centroid row."""
+    dots = centroids @ emb
+    c_norms = np.linalg.norm(centroids, axis=1)
+    sims = dots / (norm * c_norms)
+    return float(np.max(sims))
+
+
 def classify(
     text: str,
     embedder: TextEmbedding | None,
@@ -77,7 +112,10 @@ def classify(
     interessant_centroid: np.ndarray | None,
     precomputed_emb: np.ndarray | None = None,
 ) -> tuple[str, float, float, float]:
-    """Classify text as FUTILE or INTERESSANT via cosine similarity.
+    """Classify text as FUTILE or INTERESSANT via max cosine similarity over k centroids.
+
+    Each centroid array is (k, dim). The per-class score is the max similarity
+    across all k centroids for that class.
 
     Pass `precomputed_emb` to skip the embedder call when the caller already
     computed the embedding for this text (e.g. to also feed emotion.score_axes
@@ -89,8 +127,9 @@ def classify(
     norm = np.linalg.norm(emb)
     if norm == 0:
         return "FUTILE", 0.0, 0.0, 0.0
-    sim_f = float(np.dot(emb, futile_centroid) / (norm * np.linalg.norm(futile_centroid)))
-    sim_i = float(np.dot(emb, interessant_centroid) / (norm * np.linalg.norm(interessant_centroid)))
+
+    sim_f = _max_sim(emb, norm, futile_centroid)
+    sim_i = _max_sim(emb, norm, interessant_centroid)
     diff = sim_i - sim_f
     label = "INTERESSANT" if diff > 0 else "FUTILE"
     return label, abs(diff), sim_f, sim_i
