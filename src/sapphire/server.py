@@ -304,7 +304,7 @@ def truncate_user_leak(text: str) -> str:
 
 def _sampling_params(valence: float = 0, arousal: float = 0) -> dict:
     temp = max(0.4, min(1.0, 0.7 + arousal * 0.3))
-    penalty = max(1.0, min(1.3, 1.15 - valence * 0.1))
+    penalty = max(1.1, min(1.6, 1.3 - valence * 0.15))
     if MIROSTAT_ENABLED:
         ent = max(3.0, min(8.0, MIROSTAT_ENT + arousal * 2.0))
         return {
@@ -312,7 +312,7 @@ def _sampling_params(valence: float = 0, arousal: float = 0) -> dict:
             "mirostat_lr": MIROSTAT_LR,
             "mirostat_ent": ent,
             "repeat_penalty": round(penalty, 2),
-            "repeat_last_n": 64,
+            "repeat_last_n": 128,
         }
     return {
         "temperature": round(temp, 2),
@@ -320,7 +320,7 @@ def _sampling_params(valence: float = 0, arousal: float = 0) -> dict:
         "top_p": 0.9,
         "min_p": 0.05,
         "repeat_penalty": round(penalty, 2),
-        "repeat_last_n": 64,
+        "repeat_last_n": 128,
     }
 
 
