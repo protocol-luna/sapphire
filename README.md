@@ -151,7 +151,7 @@ This creates a dynamic personality: happy/engaged → more creative, less repeti
 
 ### Few-Shot Injection (`src/sapphire/few_shot.py`)
 
-5 example exchanges from `few_shot_examples.yml` are loaded at startup. On each request, they're formatted as OpenAI messages and injected immediately after the system prompt — before conversation history. This gives the model a consistent persona seed every time.
+5 example exchanges from `few_shot_examples.yml` are loaded at startup. On each request, they're formatted as OpenAI messages and injected immediately after the system prompt -- before conversation history. This gives the model a consistent persona seed every time.
 
 Example few-shot (from `few_shot_examples.yml`):
 ```
@@ -190,7 +190,7 @@ def truncate_user_leak(text):
 Main endpoint. Full pipeline with classification, session, few-shot, and retry.
 
 #### `POST /v1/chat/completions`
-Transparent proxy to Krystal (OpenAI-compatible format). No session/few-shot/degenerate logic — just routing and streaming passthrough.
+Transparent proxy to Krystal (OpenAI-compatible format). No session/few-shot/degenerate logic -- just routing and streaming passthrough.
 
 #### `POST /v1/reset`
 Reset specific or all sessions.
