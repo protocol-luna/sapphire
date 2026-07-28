@@ -161,7 +161,7 @@ futile:
 - au revoir
 - hasta luego
 - i'm off
-- 'True'
+- True
 - yeah
 - yep
 - yup
@@ -224,7 +224,7 @@ futile:
 - no thanks
 - nah
 - nope
-- 'False'
+- False
 - not really
 - pass
 - hard pass
@@ -527,7 +527,7 @@ futile:
 - heyo
 - hiya
 - heya
-- '''sup'
+- "'sup"
 - sup dawg
 - sup fam
 - yo yo
@@ -560,7 +560,7 @@ futile:
 - mornin
 - g'morning
 - evening
-- '''evening'
+- "'evening"
 - afternoon
 - g'day
 - howdy partner
@@ -580,6 +580,113 @@ futile:
 - look who it is
 - look what the cat dragged in
 - speak of the devil
+- smh
+- smh my head
+- ngl that's wild
+- ngl kinda crazy
+- this is so me
+- me fr
+- literally me
+- biggest mood
+- mood af
+- so real for that
+- realest thing ever
+- that's so valid
+- deadass
+- dead serious
+- on god
+- i swear to god
+- press f to pay respects
+- w
+- big w
+- l
+- big l
+- massive l
+- certified hood classic
+- banger
+- this is a banger
+- absolute banger
+- fire
+- this is fire
+- straight fire
+- keep cooking
+- cook
+- let him cook
+- aura
+- aura points
+- -1000 aura
+- ick
+- you're giving me the ick
+- side eye
+- giving side eye
+- major side eye
+- jumpscare
+- that was a jumpscare
+- objectively wrong
+- subjectively wrong
+- criminally wrong
+- straight to jail
+- not to be dramatic but
+- core memory unlocked
+- memory unlocked
+- touch grass
+- go outside
+- go to bed
+- drink water
+- eat something
+- take your meds
+- cope harder
+- cope
+- that's actually wild
+- plot twist
+- character development
+- villain arc
+- redemption arc
+- main character energy
+- chaotic energy
+- good vibes
+- manifesting
+- manifest
+- headcanon
+- my headcanon is
+- big fan
+- huge fan
+- stan
+- brain empty
+- brain smooth
+- i'm going feral
+- feral mode activated
+- gremlin mode
+- goblin mode
+- demon time
+- era
+- villain era
+- new era
+- we love that for you
+- proud of you
+- that's huge
+- game changer
+- life goals
+- goals
+- relatable
+- too relatable
+- personal attack
+- i feel attacked
+- hot take
+- spicy take
+- i have a theory
+- everything makes sense now
+- it clicks
+- it clicked
+- brain blast
+- eureka moment
+- we're so back
+- it's so over
+- guilty as charged
+- no regrets
+- highly recommend
+- 10/10
+
 interessant:
 - i am a software engineer
 - how do i deploy a cloudflare worker
@@ -1126,3 +1233,137 @@ interessant:
 - my child is being disrespectful
 - i want to break the cycle of trauma
 - homeschooling is burning me out
+- here's my analysis of the situation
+- let me break this down
+- i've been thinking about this a lot
+- i've done extensive research on this
+- let me share my findings
+- after careful consideration
+- i've been reflecting on this
+- this reminds me of a paper i read
+- the research suggests
+- studies have shown
+- the science behind this
+- i want to understand the mechanism
+- how does this work under the hood
+- what are the tradeoffs
+- what are the implications
+- the bigger picture
+- long term effects
+- short term vs long term
+- let's zoom out
+- taking a step back
+- from a different perspective
+- another way to look at this
+- i see it differently
+- have you considered
+- what about the alternative
+- let me play devil's advocate
+- both sides
+- nuance
+- it's more nuanced than that
+- the nuance is important
+- context matters
+- this is highly context dependent
+- it depends
+- that's a good point but
+- respectfully i disagree
+- i'd push back on that
+- my experience has been different
+- in my experience
+- from what i've seen
+- anecdotally
+- in practice
+- in theory vs in practice
+- the gap between theory and practice
+- the implementation details matter
+- the devils in the details
+- let me share my workflow
+- my setup is
+- i use this approach
+- here's my stack
+- this is my tech stack
+- i prefer this because
+- i switched to this and here's why
+- lessons learned
+- what i wish i knew before
+- things i wish someone told me
+- hard lessons
+- mistakes were made
+- here's what i learned
+- what worked for me
+- what didn't work
+- troubleshooting
+- i debugged this for hours
+- finally fixed it
+- root cause analysis
+- after hours of debugging
+- the fix was surprisingly simple
+- the bug turned out to be
+- i found the issue
+- performance analysis
+- benchmark results
+- i ran benchmarks
+- here are the numbers
+- profiling
+- i profiled the application
+- optimization
+- i optimized this
+- before and after
+- 10x improvement
+- marginal gains
+- micro optimizations
+- architecture decision
+- architecture review
+- design review
+- code review
+- pair programming
+- i pair programmed this
+- team dynamics
+- engineering culture
+- dev culture
+- incident response
+- incident report
+- outage postmortem
+- what went wrong
+- what went well
+- action items
+- lessons learned document
+- let me tell you why this matters deeply
+- this affects me on a personal level
+- this is close to my heart
+- this resonates with me
+- i relate to this
+- that hits different
+- this spoke to me
+- i needed to hear this
+- this is exactly what i needed to hear
+- thank you for sharing this
+- i appreciate you opening up
+- vulnerability is strength
+- thank you for being vulnerable
+- i'm glad you told me this
+- i'm here for you
+- i want to understand better
+- help me understand
+- walk me through this
+- explain it to me like i'm five
+- i want to learn
+- teach me
+- i'm ready to learn
+- sign me up
+- i'm committed
+- i'm all in
+- count me in
+- i want to participate
+- how can i contribute
+- how can i help
+- what do you need from me
+- let me know what you need
+- this reminds me of a discussion i had
+- i was thinking about this exact topic
+- i've been reading about this
+- the implications are fascinating
+- that's a really interesting perspective
+- i never thought about it that way
+
